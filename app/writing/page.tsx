@@ -1,7 +1,6 @@
 import React from "react";
 import Link from "next/link";
 import { WritingIndex } from "@/components/WritingIndex";
-import { WritingSeries } from "@/components/WritingSeries";
 import { SecurityFolderShelf } from "@/components/notes/SecurityFolderShelf";
 import {
   getAllSecurityFolders,
@@ -18,10 +17,10 @@ export const metadata = createPageMetadata({
 });
 
 export default function WritingPage() {
-  const allPosts = getAllPosts({ includeDrafts: true }).map(toPostSummary);
+  const allPosts = getAllPosts().map(toPostSummary);
   const securityFolders = getAllSecurityFolders();
   const securityPosts = getSecurityNotesAsPostSummaries();
-  const posts = [...securityPosts, ...allPosts.filter((post) => !post.draft)];
+  const posts = [...securityPosts, ...allPosts];
 
   return (
     <div className="asl-page asl-field-notes">
@@ -35,8 +34,6 @@ export default function WritingPage() {
       </section>
 
       <SecurityFolderShelf folders={securityFolders} />
-
-      <WritingSeries posts={allPosts} />
 
       <section className="shell notes-resource-rail" aria-label="Reference collections">
         <Link href="/notes/library">

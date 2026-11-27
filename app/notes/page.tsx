@@ -1,6 +1,5 @@
 import React from "react";
 import { WritingIndex } from "@/components/WritingIndex";
-import { WritingSeries } from "@/components/WritingSeries";
 import { PlannedNotes } from "@/components/PlannedNotes";
 import { SecurityFolderShelf } from "@/components/notes/SecurityFolderShelf";
 import {
@@ -18,10 +17,10 @@ export const metadata = createPageMetadata({
 });
 
 export default function WritingPage() {
-  const allPosts = getAllPosts({ includeDrafts: true }).map(toPostSummary);
+  const allPosts = getAllPosts().map(toPostSummary);
   const securityFolders = getAllSecurityFolders();
   const securityPosts = getSecurityNotesAsPostSummaries();
-  const posts = [...securityPosts, ...allPosts.filter((post) => !post.draft)];
+  const posts = [...securityPosts, ...allPosts];
 
   return (
     <div className="asl-page asl-field-notes">
@@ -35,8 +34,6 @@ export default function WritingPage() {
       </section>
 
       <SecurityFolderShelf folders={securityFolders} />
-
-      <WritingSeries posts={allPosts} />
 
       <section
         className="shell page-section writing-index-section"
