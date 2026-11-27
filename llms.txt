@@ -7,18 +7,67 @@
 - [Home](https://eng-asl.com/): Overview of Ahmed's embedded systems, IoT, robotics, research, teaching work, and free engineering tools.
 - [Work](https://eng-asl.com/work/): Embedded firmware, robotics, IoT telemetry, secure hardware, OTA management, Flutter, and interface projects.
 - [About](https://eng-asl.com/about/): Experience, university teaching, technical capabilities, publications, CV, and workshops.
-- [Engineering notes](https://eng-asl.com/notes/): Published engineering field notes, Linux and cybersecurity walkthroughs, and the Learn With Me series.
+- [Engineering notes](https://eng-asl.com/notes/): Published engineering field notes, Security documentation, Linux and cybersecurity walkthroughs, and the Learn With Me series.
 - [Tools](https://eng-asl.com/tools/): Searchable electronics calculators and guided engineering workbenches.
 - [Contact](https://eng-asl.com/contact/): Email and professional profiles.
+
+## Machine-readable documentation
+
+- [AI content index](https://eng-asl.com/llms.txt): Concise structured index of public articles, Markdown endpoints, projects, publications, and engineering tools.
+- [Full public documentation corpus](https://eng-asl.com/llms-full.txt): Complete compiled Markdown text of published engineering notes.
+- [XML Sitemap](https://eng-asl.com/sitemap.xml): Canonical list of published pages.
+
+## Notes and technical articles
+
+- [Security Field Notes](https://eng-asl.com/notes/security/): Structured cybersecurity reconnaissance, hardening, and protocol notes.
+- [Footprinting folder](https://eng-asl.com/notes/security/footprinting/): Service and protocol reconnaissance notes covering banners, default ports, configuration hardening, anonymous access, and enumeration techniques.
+  - [FTP and vsFTPd Footprinting](https://eng-asl.com/notes/security/footprinting/ftp/) ([Markdown version](https://eng-asl.com/notes/security/footprinting/ftp.md)): How FTP works at the protocol level, how vsFTPd is configured and hardened on Linux, and how to enumerate, test, and inspect FTP services safely.
+- [Engineering Field Notes: Methods and Tests](https://eng-asl.com/notes/welcome-to-field-notes/) ([Markdown version](https://eng-asl.com/notes/welcome-to-field-notes.md)): How I document embedded systems, Linux, cybersecurity, Flutter, and AI work so another engineer can reproduce the result.
+
+## Public projects
+
+- [Web Development](https://eng-asl.com/work/web-development/): Company websites built around the people using them.
+  - [Biovety International](https://eng-asl.com/work/web-development/biovety-website/): Website redesign, catalogue structure, domain, hosting, and business email setup for a veterinary health business moving from its legacy Eurokem presence to the new BioVety identity.
+  - [Miraj Academy](https://eng-asl.com/work/web-development/miraj-academy-website/): Website design for technical training and engineering R&D, connecting visitors with services, engineering projects, courses, and learning resources.
+- [Embedded Systems & IoT](https://eng-asl.com/work/embedded-iot/): Firmware, electronics, and connected systems, from interface to device.
+  - [Top Wood RFID Catalog](https://eng-asl.com/work/embedded-iot/topwood-rfid-catalog/): Built the RFID system behind Top Wood's LTOP Interactive Catalog. A custom ESP8266 + RC522 board reads product cards and talks to the catalog over the local Wi-Fi network, so tapping a card opens that product straight away. The board serves its own setup portal for reading, writing and verifying cards and for Wi-Fi setup, and ships with a one-click Windows installer. I also designed a 3D-printable two-part enclosure for the board in SolidWorks: the board screws onto four standoffs at its real mounting holes, the lid carries the Top Wood name and a tap-card target over the RC522 antenna, and every KiCad 3D model was checked for clearance.
+  - [Aqua Sync 2.0.0](https://eng-asl.com/work/embedded-iot/aqua-sync/): Upgraded an existing ESP32-based Aqua Sync system by programming a 7-inch CrowPanel HMI to interface with 10 one-wire temperature sensors and a DHT sensor, connecting two embedded boards, and implementing OTA updates. Designed the interface in Figma before building the final UI in SquareLine Studio.
+  - [ToolGuard](https://eng-asl.com/work/embedded-iot/toolguard/): Designed and developed a prototype system to manage borrowing and returning shared tools. I handled hardware programming, mobile UI/UX design, full Flutter application development, and Firebase integration for real-time data storage and tracking. The system monitors tool availability, tracks borrowed items and overdue returns, and provides notifications through a clean mobile interface.
+  - [Fall Detection System](https://eng-asl.com/work/embedded-iot/fall-detection-system/): A fall-detection prototype documented through a Raspberry Pi and relay setup, a computer-vision development demo, and a companion smart-home control interface with normal and alarm-locked device states.
+  - [Real-Time Muscle Activity Monitoring](https://eng-asl.com/work/embedded-iot/muscle-activity-monitoring/): Developed a wearable muscle activity monitoring system using the MyoWare 2.0 EMG sensor and a custom Flutter mobile application for real-time visualization and analysis. Surface electrodes capture muscle signals, which stream to the app as live graphs and metrics including peak values, mean amplitude, and signal variability. Firebase provides real-time data synchronization and cloud storage.
+  - [MediaMate](https://eng-asl.com/work/embedded-iot/mediamate/): A medication dispenser prototype with a companion mobile interface for patient and doctor access, medication schedules, and adherence tracking.
+  - [Smart Mosque Model](https://eng-asl.com/work/embedded-iot/smart-mosque-model/): Applied IoT model for automatically managing mosque energy and ventilation.
+  - [AgriBot Architecture](https://eng-asl.com/work/embedded-iot/agribot-architecture/): An agricultural robot that combines crop selection, fertilizer recommendations, leaf-disease diagnosis, and remote device management through Firewire OTA.
+  - [Wireless ROV Control System](https://eng-asl.com/work/embedded-iot/wireless-rov-control/): An ESP32 control system with NRF24L01+ radios for bidirectional telemetry and commands between an operator and a remotely operated vehicle.
+  - [Multi-MCU Security Lock](https://eng-asl.com/work/embedded-iot/multi-mcu-security-lock/): An access-control prototype that separates the human-machine interface from the electronic control unit to limit the effect of physical tampering.
+  - [Firewire Enterprise OTA](https://eng-asl.com/work/embedded-iot/firewire-enterprise-ota/): A remote firmware and hardware management platform for edge devices, with version tracking, device assignment, and health telemetry.
+- [Robotics](https://eng-asl.com/work/robotics/): Physical builds that sense, move, and respond.
+  - [AVR32 Autonomous Car](https://eng-asl.com/work/robotics/amit-avr-autonomous-car/): Graduation project for the AMIT Embedded Systems Diploma: an AVR-based autonomous car that detects and avoids obstacles using an ultrasonic sensor and servo motor.
+  - [MegaSumo Autonomous Robot](https://eng-asl.com/work/robotics/megasumo-autonomous-robot/): Competition firmware and sensor logic for an autonomous sumo robot, built around fast control loops and arena-tuned behavior.
+  - [Rocket League ESP32 Car](https://eng-asl.com/work/robotics/rocket-league-esp32/): A wireless ESP32 vehicle controlled with synchronized PS4 controller input over Bluetooth.
+  - [Human Follower Car](https://eng-asl.com/work/robotics/human-follower-car/): A mobile robot that combines ultrasonic and vision sensing to detect and follow a moving person.
+- [Apps & UI Design](https://eng-asl.com/work/apps-ui/): Control surfaces and applications that make complex systems usable.
+  - [Plant Care AI](https://eng-asl.com/work/apps-ui/plant-care-ai/): A plant-monitoring system that combines soil and temperature sensing, leaf-disease detection, and a Flutter app.
+  - [AgriBot Mobile App UI](https://eng-asl.com/work/apps-ui/agribot-mobile-ui/): A mobile interface for monitoring AgriBot sensor data and controlling the graduation-project robot.
+  - [Dad4Hire Mobile App UI](https://eng-asl.com/work/apps-ui/dad4hire-mobile-ui/): Task flows and mobile interface design for the Dad4Hire concept developed with Google DSC at EELU.
+- [Video & Media](https://eng-asl.com/work/video-media/): Editing, motion, and visual storytelling for technical communities.
+  - [Dragons Battle Final Call](https://eng-asl.com/work/video-media/dragons-battle-promo/): A short competition-registration video edited with rapid cuts and typographic overlays.
+
+## Research publications
+
+- [An Enhanced U-Net Architecture for Semantic Segmentation of Aerial Images from Egypt](https://scholar.google.com/citations?user=o72gFwkAAAAJ&hl=en): BM El-Den, Ahmed Ibrahim Asl. 2026 43rd National Radio Science Conference (NRSC), 200-207 (2026).
+- [Smart ROUV advances for enhanced navigation in the Suez Canal](https://www.nature.com/articles/s41598-025-23281-8): K Oqda, KM Ibrahim, AI Mustafa, RG Allam, MA Saad, Ahmed Ibrahim Asl, et al.. Scientific Reports 15 (1), 39011 (2025).
 
 ## Free engineering tools
 
 - [Guided workbenches](https://eng-asl.com/tools/category/workbenches/): Project generators, academic planning, control simulation, embedded code, security commands, and battery estimation.
-- [Circuit design tools](https://eng-asl.com/tools/category/circuit-design/): Interactive calculators for circuits, component values, timing, power supplies, and control logic. Models, assumptions, and limitations are explained on individual tool pages.
+- [Circuit design tools](https://eng-asl.com/tools/category/circuit-design/): Interactive calculators for circuits, component values, timing, power supplies, and control logic.
 - [Text and encoding tools](https://eng-asl.com/tools/category/text-encoding/): ROT transformations plus ASCII and hexadecimal conversions with worked examples.
 - [Unit conversion tools](https://eng-asl.com/tools/category/conversions/): Temperature and capacitance converters with explicit units and assumptions.
 - [Number-system tools](https://eng-asl.com/tools/category/number-systems/): Binary, hexadecimal, complements, shifts, and multi-base conversion tools.
 - [Physics and math tools](https://eng-asl.com/tools/category/physics-math/): Motion, force, wavelength, frequency, percentages, roots, and logarithm calculators.
+- [Satellite](https://eng-asl.com/tools/category/satellite/): Plan orbit geometry, spacecraft power, propagation timing, and end-to-end satellite links with connected engineering calculators.
+- [RF Engineering](https://eng-asl.com/tools/category/rf-engineering/): Plan carriers and antennas, trace RF paths, evaluate receiver noise, and estimate multiple-access capacity.
 - [Gradify](https://eng-asl.com/tools/gradify/): University GPA calculation and a Delta Engineering transcript and graduation planner.
 - [Model Mission](https://eng-asl.com/tools/ai-script-generator/): Guided computer vision project builder with YOLO26, YOLOE open-vocabulary detection, monocular depth, and U-Net segmentation examples.
 - [Sensor Code Generator](https://eng-asl.com/tools/sensor-code-generator/): Arduino, ESP-IDF, and PlatformIO code for sensors, I2C, SPI, UART, Bluetooth, Wi-Fi, ESP-NOW, and other embedded interfaces.

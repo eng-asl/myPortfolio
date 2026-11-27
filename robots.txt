@@ -1,4 +1,20 @@
+User-Agent: Googlebot
+User-Agent: Bingbot
+User-Agent: OAI-SearchBot
+User-Agent: ChatGPT-User
+User-Agent: Claude-SearchBot
+User-Agent: Claude-User
+User-Agent: PerplexityBot
+User-Agent: Perplexity-User
+Allow: /
+Disallow: /api/
+Disallow: /work/ui-preview/
+Disallow: /concepts/
+
 User-Agent: *
 Allow: /
+Disallow: /api/
+Disallow: /work/ui-preview/
+Disallow: /concepts/
 
 Sitemap: https://eng-asl.com/sitemap.xml
