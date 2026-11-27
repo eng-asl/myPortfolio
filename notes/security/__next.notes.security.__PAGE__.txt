@@ -5,47 +5,37 @@
 5:"$Sreact.suspense"
 9:I[97367,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"ViewportBoundary"]
 a:I[97367,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"MetadataBoundary"]
-:HL["/_next/static/chunks/3ff7hjkk1fayo.css","style"]
+:HL["/_next/static/chunks/1swa6ci8ioqyu.css","style"]
 8:X
-27:X
-27:C
-0:{"buildId":"mOPVHpOGYiWA-PoXynGYk","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"asl-page","children":["$","div",null,{"className":"shell SecurityNotes-module__8ES6Xa__indexShell","children":[["$","nav",null,{"className":"SecurityNotes-module__8ES6Xa__breadcrumbBar","aria-label":"Breadcrumb","children":[["$","$L2",null,{"href":"/notes","className":"SecurityNotes-module__8ES6Xa__breadcrumbLink","children":"Notes"}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__breadcrumbSep","aria-hidden":"true","children":"/"}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__breadcrumbCurrent","children":"Security"}]]}],["$","header",null,{"className":"SecurityNotes-module__8ES6Xa__indexHero","children":[["$","p",null,{"className":"SecurityNotes-module__8ES6Xa__shelfEyebrow","children":[["$","$L3",null,{"iconNode":[["path",{"d":"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z","key":"oel41y"}]],"className":"lucide-shield","size":14,"aria-hidden":"true"}],["$","span",null,{"children":"SECURITY / DIRECTORY INDEX"}]]}],["$","h1",null,{"children":"Security Field Notes"}],["$","p",null,{"children":"Structured notes grouped by assessment phase. Open a folder to browse protocol architecture, server hardening, commands, and visual diagrams."}]]}],["$","div",null,{"className":"SecurityNotes-module__8ES6Xa__shelfGrid","children":[["$","article","footprinting",{"className":"SecurityNotes-module__8ES6Xa__shelfCard","children":[["$","div",null,{"className":"SecurityNotes-module__8ES6Xa__shelfCardTop","children":[["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__shelfPhase","children":"PHASE 01"}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__shelfCount","children":["01"," ","PROTOCOL"]}]]}],["$","div",null,{"className":"SecurityNotes-module__8ES6Xa__shelfCardTitleRow","children":[["$","$L3",null,{"iconNode":[["path",{"d":"M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z","key":"hod4my"}],["path",{"d":"M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z","key":"w4yl2u"}],["path",{"d":"M3 5a2 2 0 0 0 2 2h3","key":"f2jnh7"}],["path",{"d":"M3 3v13a2 2 0 0 0 2 2h3","key":"k8epm1"}]],"className":"lucide-folder-tree SecurityNotes-module__8ES6Xa__shelfIcon","size":18,"aria-hidden":"true"}],["$","h2",null,{"children":["$","$L2",null,{"href":"/notes/security/footprinting","children":"Footprinting"}]}]]}],["$","p",null,{"className":"SecurityNotes-module__8ES6Xa__shelfCardSummary","children":"Service and protocol reconnaissance notes covering banners, default ports, configuration hardening, anonymous access, and enumeration techniques."}],["$","ul",null,{"className":"SecurityNotes-module__8ES6Xa__shelfNoteList","children":[["$","li","ftp",{"children":["$","$L2",null,{"href":"/notes/security/footprinting/ftp","className":"SecurityNotes-module__8ES6Xa__shelfNoteLink","children":[["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__shelfNoteBadge","children":"FTP"}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__shelfNoteTitle","children":"FTP (File Transfer Protocol) & vsFTPd"}],["$","$L3",null,{"iconNode":[["path",{"d":"M7 7h10v10","key":"1tivn9"}],["path",{"d":"M7 17 17 7","key":"1vkiza"}]],"className":"lucide-arrow-up-right","size":14,"aria-hidden":"true"}]]}]}]]}]]}]]}]]}]}],[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/3ff7hjkk1fayo.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/2ufbqzbeyam3w.js","async":true}]],["$","$L4",null,{"children":["$","$5",null,{"name":"Next.MetadataOutlet","children":"$@6"}]}]]}],"isPartial":"$@7","staleTime":"$8","varyParams":null},{"rsc":["$","$1","h",{"children":[null,["$","$L9",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","div",null,{"hidden":true,"children":["$","$La",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Security Field Notes"}],["$","meta","1",{"name":"description","content":"Hierarchical cybersecurity notes organized by phase and protocol, starting with Footprinting and FTP (vsFTPd)."}],"$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21","$L22"]}]}]}],"$L23"]}],"isPartial":"$@24","staleTime":"$8","varyParams":null},{"rsc":"$L25","isPartial":"$@26","staleTime":"$8","varyParams":"$27"},{"rsc":"$L28","isPartial":"$@29","staleTime":"$8","varyParams":"$27"}],"isUpgradeableISRFallback":false,"a":"$@2a","rootVaryParams":null,"needsRuntimeRequest":"$@2b"}
-2c:I[27201,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"IconMark"]
-2d:I[39756,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"default"]
-2e:I[37457,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"default"]
+1d:X
+1d:C
+0:{"buildId":"Jv_UfncxDYH7ssTbji_Nb","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"asl-page","children":["$","div",null,{"className":"shell SecurityNotes-module__8ES6Xa__indexShell","children":[["$","nav",null,{"className":"SecurityNotes-module__8ES6Xa__breadcrumbBar","aria-label":"Breadcrumb","children":[["$","$L2",null,{"href":"/notes","className":"SecurityNotes-module__8ES6Xa__breadcrumbLink","children":"Notes"}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__breadcrumbSep","aria-hidden":"true","children":"/"}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__breadcrumbCurrent","children":"Security"}]]}],["$","header",null,{"className":"SecurityNotes-module__8ES6Xa__indexHero","children":[["$","h1",null,{"children":"Security Field Notes"}],["$","p",null,{"children":"Technical notes organized by assessment phase, covering protocol architecture, server configuration, enumeration commands, and verification techniques."}]]}],["$","div",null,{"className":"SecurityNotes-module__8ES6Xa__indexList","children":[["$","section","footprinting",{"className":"SecurityNotes-module__8ES6Xa__indexFolderBlock","children":[["$","div",null,{"className":"SecurityNotes-module__8ES6Xa__indexFolderHead","children":[["$","h2",null,{"children":["$","$L2",null,{"href":"/notes/security/footprinting","children":"Footprinting"}]}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__indexCount","children":[1," ","article"]}]]}],["$","p",null,{"className":"SecurityNotes-module__8ES6Xa__indexFolderSummary","children":"Service and protocol reconnaissance notes covering banners, default ports, configuration hardening, anonymous access, and enumeration techniques."}],["$","ul",null,{"className":"SecurityNotes-module__8ES6Xa__indexArticleList","children":[["$","li","ftp",{"className":"SecurityNotes-module__8ES6Xa__indexArticleItem","children":["$","$L2",null,{"href":"/notes/security/footprinting/ftp","className":"SecurityNotes-module__8ES6Xa__indexArticleLink","children":[["$","div",null,{"children":[["$","strong",null,{"children":"FTP and vsFTPd Footprinting"}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__indexArticleMeta","children":["TCP 21 (Control), TCP 20 / PASV (Data)"," / ",14," min read"]}]]}],["$","$L3",null,{"iconNode":[["path",{"d":"M7 7h10v10","key":"1tivn9"}],["path",{"d":"M7 17 17 7","key":"1vkiza"}]],"className":"lucide-arrow-up-right","size":15,"aria-hidden":"true"}]]}]}]]}]]}]]}]]}]}],[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/1swa6ci8ioqyu.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/2ufbqzbeyam3w.js","async":true}]],["$","$L4",null,{"children":["$","$5",null,{"name":"Next.MetadataOutlet","children":"$@6"}]}]]}],"isPartial":"$@7","staleTime":"$8","varyParams":null},{"rsc":["$","$1","h",{"children":[null,["$","$L9",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","div",null,{"hidden":true,"children":["$","$La",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Security Field Notes"}],["$","meta","1",{"name":"description","content":"Structured cybersecurity notes organized by phase and protocol, starting with Footprinting and FTP (vsFTPd)."}],["$","link","2",{"rel":"author","href":"https://eng-asl.com/about/"}],["$","meta","3",{"name":"author","content":"Ahmed Ibrahim Asl"}],["$","meta","4",{"name":"keywords","content":"Ahmed Ibrahim Asl,Ahmed Asl,Ahmed Ibrahim Assal,Ahmed Assal,Ahmed Ibrahim Assl,Ahmed Assl,أحمد إبراهيم عسل,أحمد عسل,embedded systems engineer,IoT R&D engineer,engineering calculators"}],["$","meta","5",{"name":"creator","content":"Ahmed Ibrahim Asl"}],["$","meta","6",{"name":"robots","content":"index, follow"}],["$","meta","7",{"name":"googlebot","content":"index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1"}],["$","meta","8",{"name":"category","content":"technology"}],["$","link","9",{"rel":"canonical","href":"https://eng-asl.com/notes/security/"}],["$","meta","10",{"property":"og:title","content":"Security Field Notes | Ahmed Asl"}],["$","meta","11",{"property":"og:description","content":"Structured cybersecurity notes organized by phase and protocol, starting with Footprinting and FTP (vsFTPd)."}],"$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18"]}]}]}],"$L19"]}],"isPartial":"$@1a","staleTime":"$8","varyParams":null},{"rsc":"$L1b","isPartial":"$@1c","staleTime":"$8","varyParams":"$1d"},{"rsc":"$L1e","isPartial":"$@1f","staleTime":"$8","varyParams":"$1d"}],"isUpgradeableISRFallback":false,"a":"$@20","rootVaryParams":null,"needsRuntimeRequest":"$@21"}
+22:I[27201,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"IconMark"]
+23:I[39756,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"default"]
+24:I[37457,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"default"]
 6:null
-b:["$","link","2",{"rel":"author","href":"https://eng-asl.com/about/"}]
-c:["$","meta","3",{"name":"author","content":"Ahmed Ibrahim Asl"}]
-d:["$","meta","4",{"name":"keywords","content":"Ahmed Ibrahim Asl,Ahmed Asl,Ahmed Ibrahim Assal,Ahmed Assal,Ahmed Ibrahim Assl,Ahmed Assl,أحمد إبراهيم عسل,أحمد عسل,embedded systems engineer,IoT R&D engineer,engineering calculators"}]
-e:["$","meta","5",{"name":"creator","content":"Ahmed Ibrahim Asl"}]
-f:["$","meta","6",{"name":"robots","content":"index, follow"}]
-10:["$","meta","7",{"name":"googlebot","content":"index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1"}]
-11:["$","meta","8",{"name":"category","content":"technology"}]
-12:["$","link","9",{"rel":"canonical","href":"https://eng-asl.com/notes/security/"}]
-13:["$","meta","10",{"property":"og:title","content":"Security Field Notes | Ahmed Asl"}]
-14:["$","meta","11",{"property":"og:description","content":"Hierarchical cybersecurity notes organized by phase and protocol, starting with Footprinting and FTP (vsFTPd)."}]
-15:["$","meta","12",{"property":"og:url","content":"https://eng-asl.com/notes/security/"}]
-16:["$","meta","13",{"property":"og:site_name","content":"Ahmed Asl"}]
-17:["$","meta","14",{"property":"og:locale","content":"en_US"}]
-18:["$","meta","15",{"property":"og:image","content":"https://eng-asl.com/opengraph-image.png"}]
-19:["$","meta","16",{"property":"og:image:width","content":"1200"}]
-1a:["$","meta","17",{"property":"og:image:height","content":"630"}]
-1b:["$","meta","18",{"property":"og:image:alt","content":"Ahmed Ibrahim Asl, Embedded Systems & IoT R&D Engineer"}]
-1c:["$","meta","19",{"property":"og:type","content":"website"}]
-1d:["$","meta","20",{"name":"twitter:card","content":"summary_large_image"}]
-1e:["$","meta","21",{"name":"twitter:title","content":"Security Field Notes | Ahmed Asl"}]
-1f:["$","meta","22",{"name":"twitter:description","content":"Hierarchical cybersecurity notes organized by phase and protocol, starting with Footprinting and FTP (vsFTPd)."}]
-20:["$","meta","23",{"name":"twitter:image","content":"https://eng-asl.com/twitter-image.png"}]
-21:["$","link","24",{"rel":"icon","href":"/icon.svg?icon.0yv64dno9_oy9.svg","sizes":"any","type":"image/svg+xml"}]
-22:["$","$L2c","25",{}]
-23:["$","meta",null,{"name":"next-size-adjust","content":""}]
-25:["$","$1","c",{"children":[null,["$","$L2d",null,{"parallelRouterKey":"children","template":["$","$L2e",null,{}]}]]}]
-28:["$","$1","c",{"children":[null,["$","$L2d",null,{"parallelRouterKey":"children","template":["$","$L2e",null,{}]}]]}]
-2b:true
+b:["$","meta","12",{"property":"og:url","content":"https://eng-asl.com/notes/security/"}]
+c:["$","meta","13",{"property":"og:site_name","content":"Ahmed Asl"}]
+d:["$","meta","14",{"property":"og:locale","content":"en_US"}]
+e:["$","meta","15",{"property":"og:image","content":"https://eng-asl.com/opengraph-image.png"}]
+f:["$","meta","16",{"property":"og:image:width","content":"1200"}]
+10:["$","meta","17",{"property":"og:image:height","content":"630"}]
+11:["$","meta","18",{"property":"og:image:alt","content":"Ahmed Ibrahim Asl, Embedded Systems & IoT R&D Engineer"}]
+12:["$","meta","19",{"property":"og:type","content":"website"}]
+13:["$","meta","20",{"name":"twitter:card","content":"summary_large_image"}]
+14:["$","meta","21",{"name":"twitter:title","content":"Security Field Notes | Ahmed Asl"}]
+15:["$","meta","22",{"name":"twitter:description","content":"Structured cybersecurity notes organized by phase and protocol, starting with Footprinting and FTP (vsFTPd)."}]
+16:["$","meta","23",{"name":"twitter:image","content":"https://eng-asl.com/twitter-image.png"}]
+17:["$","link","24",{"rel":"icon","href":"/icon.svg?icon.0yv64dno9_oy9.svg","sizes":"any","type":"image/svg+xml"}]
+18:["$","$L22","25",{}]
+19:["$","meta",null,{"name":"next-size-adjust","content":""}]
+1b:["$","$1","c",{"children":[null,["$","$L23",null,{"parallelRouterKey":"children","template":["$","$L24",null,{}]}]]}]
+1e:["$","$1","c",{"children":[null,["$","$L23",null,{"parallelRouterKey":"children","template":["$","$L24",null,{}]}]]}]
+21:true
 8:300
 8:C
-2a:0
-24:"$undefined"
-26:"$undefined"
-29:"$undefined"
+20:0
+1a:"$undefined"
+1c:"$undefined"
+1f:"$undefined"
 7:"$undefined"
