@@ -31,7 +31,6 @@ const ROUTES = [
   "/work/",
   "/about/",
   "/writing/",
-  "/writing/welcome-to-field-notes/",
   "/notes/",
   "/notes/library/",
   "/notes/library/test-document/",

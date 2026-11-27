@@ -30,8 +30,6 @@ test("security note data, Markdown generator, shared article pages, and componen
     "app/notes/security/page.tsx",
     "app/notes/security/[folder]/page.tsx",
     "app/notes/security/[folder]/[slug]/page.tsx",
-    "app/notes/[slug]/page.tsx",
-    "app/writing/[slug]/page.tsx",
     ...readdirSync("components/notes").map((name) => join("components/notes", name))
   ];
 

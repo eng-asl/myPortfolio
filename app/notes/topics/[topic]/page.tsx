@@ -1,11 +1,12 @@
 import React from "react";
 import { notFound } from "next/navigation";
+import { getSecurityNotesAsPostSummaries } from "@/data/notes/security";
 import { getAllPosts, toPostSummary } from "@/lib/content";
 import { WritingIndex } from "@/components/WritingIndex";
 import { createPageMetadata } from "@/lib/seo";
 
 export async function generateStaticParams() {
-  const posts = getAllPosts();
+  const posts = [...getSecurityNotesAsPostSummaries(), ...getAllPosts()];
   const tags = new Set<string>();
   posts.forEach((p) => p.tags.forEach(t => tags.add(t.toLowerCase().replace(/\s+/g, "-"))));
   
@@ -23,7 +24,10 @@ export async function generateMetadata({ params }: { params: Promise<{ topic: st
 
 export default async function TopicPage({ params }: { params: Promise<{ topic: string }> }) {
   const { topic } = await params;
-  const allPosts = getAllPosts().map(toPostSummary);
+  const allPosts = [
+    ...getSecurityNotesAsPostSummaries(),
+    ...getAllPosts().map(toPostSummary)
+  ];
   const posts = allPosts.filter(p => 
     p.tags.some(t => t.toLowerCase().replace(/\s+/g, "-") === topic)
   );

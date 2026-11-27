@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { Metadata } from "next";
 import sitemap from "../../app/sitemap.js";
-import { generateMetadata as legacyMetadata } from "../../app/writing/[slug]/page";
+import { getAllSecurityNotes } from "../../data/notes/security";
+import { generateMetadata as securityNoteMetadata } from "../../app/notes/security/[folder]/[slug]/page";
 import { getAllPosts } from "../../lib/content";
 import { projects } from "../../data/portfolio";
 import { groupWork } from "../../data/work-categories";
@@ -20,7 +21,10 @@ describe("search discovery contract", () => {
     const urls = sitemap().map((entry) => entry.url);
     expect(urls).toContain(`${base}/notes/`);
     expect(urls.some((url) => url.includes("/writing/"))).toBe(false);
-    expect(getAllPosts().length).toBeGreaterThan(0);
+    expect(getAllSecurityNotes().length).toBeGreaterThan(0);
+    for (const note of getAllSecurityNotes()) {
+      expect(urls).toContain(`${base}/notes/security/${note.folderSlug}/${note.slug}/`);
+    }
     for (const post of getAllPosts()) expect(urls).toContain(`${base}/notes/${post.slug}/`);
   });
 
@@ -47,12 +51,14 @@ describe("search discovery contract", () => {
     }
   });
 
-  it("keeps legacy article URLs usable but canonicalizes the identical notes version", async () => {
-    const post = getAllPosts()[0];
-    const metadata: Metadata = await legacyMetadata({
-      params: Promise.resolve({ slug: post.slug })
+  it("publishes canonical URLs and Markdown alternates on security field notes", async () => {
+    const note = getAllSecurityNotes()[0];
+    const metadata: Metadata = await securityNoteMetadata({
+      params: Promise.resolve({ folder: note.folderSlug, slug: note.slug })
     });
-    expect(metadata.alternates?.canonical).toBe(`${base}/notes/${post.slug}/`);
+    expect(metadata.alternates?.canonical).toBe(
+      `${base}/notes/security/${note.folderSlug}/${note.slug}/`
+    );
   });
 
   it("registers and canonicalizes the satellite and RF calculators", async () => {

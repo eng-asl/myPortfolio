@@ -8,23 +8,22 @@ const readBytes = (filePath) => readFileSync(filePath);
 
 test("published Markdown endpoints exist, exclude drafts, use LF, and omit em/en dashes", () => {
   const ftpMdPath = join("public", "notes", "security", "footprinting", "ftp.md");
-  const welcomeMdPath = join("public", "notes", "welcome-to-field-notes.md");
 
   assert.ok(existsSync(ftpMdPath), "missing public/notes/security/footprinting/ftp.md");
-  assert.ok(existsSync(welcomeMdPath), "missing public/notes/welcome-to-field-notes.md");
 
-  for (const draftName of [
+  for (const removedOrDraft of [
+    "welcome-to-field-notes.md",
     "overthewire-bandit-workflow.md",
     "reliable-sensor-to-flutter-pipeline.md"
   ]) {
     assert.equal(
-      existsSync(join("public", "notes", draftName)),
+      existsSync(join("public", "notes", removedOrDraft)),
       false,
-      `draft article must not be published at public/notes/${draftName}`
+      `removed or draft article must not be published at public/notes/${removedOrDraft}`
     );
   }
 
-  for (const mdPath of [ftpMdPath, welcomeMdPath]) {
+  for (const mdPath of [ftpMdPath]) {
     const rawBytes = readBytes(mdPath);
     assert.equal(rawBytes.includes(13), false, `${mdPath} contains CR bytes`);
     const text = read(mdPath);
@@ -93,13 +92,16 @@ test("llms.txt and llms-full.txt index published notes, projects, publications, 
   for (const token of [
     "https://eng-asl.com/notes/security/footprinting/ftp/",
     "https://eng-asl.com/notes/security/footprinting/ftp.md",
-    "https://eng-asl.com/notes/welcome-to-field-notes/",
-    "https://eng-asl.com/notes/welcome-to-field-notes.md",
     "https://eng-asl.com/llms-full.txt",
     "Biovety International",
     "Scientific Reports 15 (1), 39011"
   ]) {
     assert.ok(llmsTxt.includes(token), `llms.txt missing token: ${token}`);
+  }
+
+  for (const removed of ["welcome-to-field-notes", "Engineering Field Notes: Methods and Tests"]) {
+    assert.equal(llmsTxt.includes(removed), false, `llms.txt still references removed article: ${removed}`);
+    assert.equal(llmsFull.includes(removed), false, `llms-full.txt still references removed article: ${removed}`);
   }
 
   assert.equal(
