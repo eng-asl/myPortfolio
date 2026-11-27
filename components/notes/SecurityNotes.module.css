@@ -154,7 +154,7 @@
 /* Two-Column Reading Flow (Main Continuous Article + Quiet Sticky TOC) */
 .docLayout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 210px;
+  grid-template-columns: minmax(0, 1fr) 220px;
   gap: clamp(28px, 5vw, 56px);
   align-items: start;
 }
@@ -170,15 +170,17 @@
 }
 
 .docBody {
+  grid-column: 1;
+  grid-row: 1;
   max-width: var(--asl-reading, 74ch);
   display: grid;
-  gap: 40px;
+  gap: 36px;
 }
 
 .docSection {
-  scroll-margin-top: calc(var(--asl-header, 72px) + 24px);
+  scroll-margin-top: calc(var(--asl-header, 72px) + 28px);
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .docSection h2 {
@@ -691,10 +693,21 @@ h4.docSubheading {
   color: var(--asl-muted);
 }
 
-/* Right Sticky Table of Contents */
+/* Right Sticky Table of Contents & Mobile Sticky Jump Bar */
+.mobileTocBar {
+  display: none;
+}
+
 .docToc {
+  grid-column: 2;
+  grid-row: 1;
   position: sticky;
   top: calc(var(--asl-header, 72px) + 28px);
+  max-height: calc(100dvh - var(--asl-header, 72px) - 52px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-self: start;
+  align-content: start;
   padding-left: 16px;
   border-left: 1px solid var(--asl-line);
   display: grid;
@@ -710,7 +723,8 @@ h4.docSubheading {
   color: var(--asl-muted);
 }
 
-.docTocList {
+.docTocList,
+.docTocSubList {
   margin: 0;
   padding: 0;
   list-style: none;
@@ -718,18 +732,59 @@ h4.docSubheading {
   gap: 2px;
 }
 
+.docTocGroup {
+  display: grid;
+  gap: 2px;
+}
+
+.docTocSubList {
+  padding-left: 12px;
+  margin-bottom: 4px;
+}
+
 .docTocLink {
   display: block;
-  padding: 5px 0;
-  font-size: 0.86rem;
+  padding: 5px 0 5px 8px;
+  margin-left: -17px;
+  padding-left: 16px;
+  border-left: 2px solid transparent;
+  font-size: 0.85rem;
   line-height: 1.35;
   color: var(--asl-text-secondary);
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.docTocSubLink {
+  display: block;
+  padding: 3px 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--asl-muted);
   transition: color 140ms ease;
 }
 
 .docTocLink:hover,
-.docTocLink:focus-visible {
+.docTocLink:focus-visible,
+.docTocSubLink:hover,
+.docTocSubLink:focus-visible {
   color: var(--asl-gold);
+}
+
+.docTocLinkActive {
+  color: var(--asl-gold);
+  border-left-color: var(--asl-gold);
+  font-weight: 600;
+}
+
+.docTocSubLinkActive {
+  color: var(--asl-gold-soft);
+  font-weight: 600;
+}
+
+.terminalSourceLabel {
+  margin-left: 4px;
+  color: var(--asl-muted);
+  font-size: 0.7rem;
 }
 
 /* Server-Rendered Non-JS Accessible Extended Reference & Attribution */
@@ -939,6 +994,15 @@ h4.docSubheading {
   gap: 12px;
 }
 
+.floatingSourceLabel {
+  margin: 0;
+  font-family: var(--asl-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--asl-muted);
+}
+
 .floatingShortDef {
   margin: 0;
   padding-left: 12px;
@@ -955,6 +1019,16 @@ h4.docSubheading {
   line-height: 1.55;
 }
 
+.floatingStepList {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--asl-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  display: grid;
+  gap: 6px;
+}
+
 .floatingDetailList {
   margin: 0;
   padding-left: 18px;
@@ -963,6 +1037,12 @@ h4.docSubheading {
   line-height: 1.6;
   display: grid;
   gap: 6px;
+}
+
+.floatingTableWrap,
+.floatingDiagramBlock {
+  display: grid;
+  gap: 8px;
 }
 
 .floatingSecurityBox {
@@ -1248,28 +1328,89 @@ h4.docSubheading {
 /* Responsive Breakpoints */
 @media (max-width: 1040px) {
   .docLayout {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    display: block;
   }
 
   .docToc {
-    position: static;
-    grid-row: 1;
-    padding: 0 0 14px;
-    border-left: 0;
-    border-bottom: 1px solid var(--asl-line);
+    display: none;
   }
 
-  .docTocList {
+  .mobileTocBar {
+    display: block;
+    position: sticky;
+    top: calc(var(--asl-header, 64px) + 6px);
+    z-index: 40;
+    margin-bottom: 24px;
+    background: var(--asl-surface);
+    border: 1px solid var(--asl-line);
+    border-radius: var(--r-1, 2px);
+  }
+
+  .mobileTocToggle {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 4px 16px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: transparent;
+    border: 0;
+    color: var(--asl-text);
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .mobileTocToggleLeft {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .mobileTocLabel {
+    font-family: var(--asl-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--asl-gold);
+    flex-shrink: 0;
+  }
+
+  .mobileTocCurrent {
+    font-size: 0.85rem;
+    color: var(--asl-text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobileTocChevron {
+    flex-shrink: 0;
+    color: var(--asl-muted);
+    transition: transform 160ms ease;
+  }
+
+  .mobileTocChevronOpen {
+    transform: rotate(180deg);
+  }
+
+  .mobileTocPanel {
+    padding: 8px 12px 12px;
+    border-top: 1px solid var(--asl-line);
+    max-height: 55dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .mobileTocPanel[hidden] {
+    display: none;
   }
 
   .docTocLink {
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
+    min-height: 36px;
+    margin-left: 0;
+    padding-left: 10px;
   }
 }
 

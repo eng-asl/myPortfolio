@@ -52,10 +52,12 @@
 html {
   background: var(--asl-page);
   color-scheme: dark;
+  overflow-x: clip;
 }
 
 body {
   min-width: 320px;
+  overflow-x: clip;
   color: var(--asl-text);
   background: var(--asl-page);
   font-family: var(--asl-font);
@@ -1591,6 +1593,9 @@ button,
 .asl-article .article-toc {
   position: sticky;
   top: calc(var(--asl-header) + 28px);
+  max-height: calc(100dvh - var(--asl-header) - 52px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0 0 0 16px;
   background: transparent;
   border: 0;
@@ -1615,8 +1620,13 @@ button,
   color: var(--asl-text-secondary);
 }
 
-.asl-article .article-toc a:hover {
+.asl-article .article-toc a:hover,
+.asl-article .article-toc a[aria-current="location"] {
   color: var(--asl-gold);
+}
+
+.asl-article .article-toc a[aria-current="location"] {
+  font-weight: 600;
 }
 
 .asl-article .article-body {

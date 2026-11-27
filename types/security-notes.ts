@@ -2,6 +2,12 @@ export type TerminalLineKind = "command" | "input" | "response" | "output" | "co
 
 export type SemanticTone = "ok" | "info" | "warn" | "alert";
 
+export type ExampleSourceLabel =
+  | "Original lab output"
+  | "Abbreviated output"
+  | "Illustrative example"
+  | "Reconstructed directory tree";
+
 export interface TerminalLine {
   kind: TerminalLineKind;
   prompt?: string;
@@ -16,6 +22,7 @@ export interface TerminalBlockData {
   title: string;
   environment: "LINUX" | "FTP CLIENT" | "CONFIG" | "BANNER";
   caption?: string;
+  sourceLabel?: ExampleSourceLabel;
   copyCommand?: string;
   lines: TerminalLine[];
 }
@@ -51,6 +58,12 @@ export type InspectorCategory =
   | "Response Code"
   | "Risk";
 
+export interface InspectorTable {
+  caption?: string;
+  columns: string[];
+  rows: string[][];
+}
+
 export interface InspectorEntry {
   id: string;
   label: string;
@@ -58,9 +71,14 @@ export interface InspectorEntry {
   defaultTab?: "overview" | "security" | "terminal" | "diagram";
   shortDefinition: string;
   details: string[];
+  steps?: string[];
+  tables?: InspectorTable[];
   securityNote?: string;
   terminal?: TerminalBlockData;
+  terminals?: TerminalBlockData[];
+  sourceLabel?: ExampleSourceLabel;
   diagramId?: string;
+  anchorSectionId?: string;
   relatedIds?: string[];
 }
 
@@ -68,7 +86,8 @@ export interface SettingRow {
   setting: string;
   summary: string;
   riskLevel?: "safe" | "info" | "danger";
-  inspectorId: string;
+  inspectorId?: string;
+  actionLabel?: string;
 }
 
 export interface InlineTermRef {
@@ -79,13 +98,14 @@ export interface InlineTermRef {
 export interface ComparisonRow {
   cells: string[];
   inspectorId?: string;
+  actionLabel?: string;
 }
 
 export interface ResponseCodeRow {
   code: string;
   meaning: string;
   tone: "ok" | "info" | "alert";
-  inspectorId: string;
+  inspectorId?: string;
 }
 
 export interface StepCardItem {
@@ -105,10 +125,21 @@ export interface NoteSubSection {
   blocks: NoteContentBlock[];
 }
 
+export type NoteActionKind =
+  | "inspect"
+  | "view-diagram"
+  | "view-large"
+  | "view-example"
+  | "view-output"
+  | "setup-guide"
+  | "reference";
+
 export interface NoteContextLink {
   label: string;
+  actionKind?: NoteActionKind;
   inspectorId?: string;
   diagramId?: string;
+  overviewSheet?: boolean;
   href?: string;
 }
 
@@ -138,6 +169,7 @@ export type NoteContentBlock =
       type: "diagram-embed";
       diagramIds: string[];
       layout?: "single" | "pair";
+      hideSummary?: boolean;
       caption?: string;
     }
   | {
@@ -203,12 +235,19 @@ export interface NotePart {
   intro: string;
   diagramIds: string[];
   blocks: NoteContentBlock[];
+  tocSubheadings?: Array<{ id: string; title: string }>;
 }
 
 export interface QuickFactItem {
   label: string;
   value: string;
   inspectorId?: string;
+}
+
+export interface NoteReferenceLink {
+  label: string;
+  href?: string;
+  detail?: string;
 }
 
 export interface SecurityNoteEntry {
@@ -230,6 +269,8 @@ export interface SecurityNoteEntry {
   parts: NotePart[];
   diagrams: DiagramSlot[];
   inspectors: Record<string, InspectorEntry>;
+  references?: NoteReferenceLink[];
+  authorAttributionNote?: string;
 }
 
 export interface SecurityFolderEntry {

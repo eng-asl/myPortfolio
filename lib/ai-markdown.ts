@@ -1,6 +1,8 @@
 import type { Post } from "@/types/content";
 import type { Publication, Project } from "@/types/portfolio";
 import type {
+  DiagramSlot,
+  InspectorEntry,
   NoteContentBlock,
   NoteSubSection,
   SecurityFolderEntry,
@@ -33,7 +35,11 @@ function escapeTableCell(value: string): string {
 function formatTerminalBlock(terminal: TerminalBlockData): string[] {
   const out: string[] = [];
   if (terminal.title) {
-    out.push(`**${cleanDashes(terminal.title)}**`);
+    const labelSuffix = terminal.sourceLabel ? ` *(${cleanDashes(terminal.sourceLabel)})*` : "";
+    out.push(`**${cleanDashes(terminal.title)}**${labelSuffix}`);
+    out.push("");
+  } else if (terminal.sourceLabel) {
+    out.push(`*${cleanDashes(terminal.sourceLabel)}*`);
     out.push("");
   }
 
@@ -61,10 +67,97 @@ function formatTerminalBlock(terminal: TerminalBlockData): string[] {
   return out;
 }
 
+function renderDiagramMarkdown(
+  diagram: DiagramSlot,
+  headingPrefix = "####"
+): string[] {
+  const out: string[] = [
+    `${headingPrefix} Diagram: ${cleanDashes(diagram.title)}`,
+    "",
+    cleanDashes(diagram.summary),
+    ""
+  ];
+  if (diagram.imageSrc) {
+    out.push(`Illustration URL: ${SITE_ORIGIN}${diagram.imageSrc}`, "");
+  }
+  out.push(`Diagram description: ${cleanDashes(diagram.alt)}`);
+  if (diagram.keyPoints.length > 0) {
+    out.push("");
+    for (const point of diagram.keyPoints) {
+      out.push(`- ${cleanDashes(point)}`);
+    }
+  }
+  out.push("");
+  return out;
+}
+
+function renderInspectorMarkdown(
+  entry: InspectorEntry,
+  diagramsById: Record<string, DiagramSlot>,
+  embeddedDiagramIds: Set<string>,
+  headingPrefix = "####"
+): string[] {
+  const out: string[] = [`${headingPrefix} ${cleanDashes(entry.label)}`, ""];
+  if (entry.sourceLabel) {
+    out.push(`*Source: ${cleanDashes(entry.sourceLabel)}*`, "");
+  }
+  out.push(cleanDashes(entry.shortDefinition), "");
+
+  if (entry.steps?.length) {
+    entry.steps.forEach((step, idx) => {
+      out.push(`${idx + 1}. ${cleanDashes(step)}`);
+    });
+    out.push("");
+  }
+
+  if (entry.details.length > 0) {
+    for (const detail of entry.details) {
+      out.push(`- ${cleanDashes(detail)}`);
+    }
+    out.push("");
+  }
+
+  if (entry.tables?.length) {
+    for (const tbl of entry.tables) {
+      if (tbl.caption) {
+        out.push(`**${cleanDashes(tbl.caption)}**`, "");
+      }
+      out.push(`| ${tbl.columns.map(escapeTableCell).join(" | ")} |`);
+      out.push(`| ${tbl.columns.map(() => "---").join(" | ")} |`);
+      for (const row of tbl.rows) {
+        out.push(`| ${row.map(escapeTableCell).join(" | ")} |`);
+      }
+      out.push("");
+    }
+  }
+
+  if (entry.diagramId && diagramsById[entry.diagramId] && !embeddedDiagramIds.has(entry.diagramId)) {
+    const diagram = diagramsById[entry.diagramId];
+    embeddedDiagramIds.add(diagram.id);
+    out.push(...renderDiagramMarkdown(diagram, `${headingPrefix}#`));
+  }
+
+  const terminals = [
+    ...(entry.terminal ? [entry.terminal] : []),
+    ...(entry.terminals ?? [])
+  ];
+  for (const term of terminals) {
+    out.push(...formatTerminalBlock(term), "");
+  }
+
+  if (entry.securityNote) {
+    out.push(`**Security Note:** ${cleanDashes(entry.securityNote)}`, "");
+  }
+
+  return out;
+}
+
 function serializeBlocks(
   blocks: NoteContentBlock[],
   note: SecurityNoteEntry,
-  embeddedDiagramIds: Set<string>
+  embeddedDiagramIds: Set<string>,
+  renderedInspectorIds: Set<string>,
+  overviewState: { rendered: boolean }
 ): string[] {
   const diagramsById = Object.fromEntries(note.diagrams.map((d) => [d.id, d]));
   const lines: string[] = [];
@@ -76,7 +169,7 @@ function serializeBlocks(
       lines.push(cleanDashes(sub.intro));
       lines.push("");
     }
-    lines.push(...serializeBlocks(sub.blocks, note, embeddedDiagramIds));
+    lines.push(...serializeBlocks(sub.blocks, note, embeddedDiagramIds, renderedInspectorIds, overviewState));
   };
 
   for (const block of blocks) {
@@ -120,22 +213,7 @@ function serializeBlocks(
           const diagram = diagramsById[id];
           if (!diagram) continue;
           embeddedDiagramIds.add(diagram.id);
-          lines.push(`#### Diagram: ${cleanDashes(diagram.title)}`);
-          lines.push("");
-          lines.push(cleanDashes(diagram.summary));
-          lines.push("");
-          if (diagram.imageSrc) {
-            lines.push(`Illustration URL: ${SITE_ORIGIN}${diagram.imageSrc}`);
-            lines.push("");
-          }
-          lines.push(`Diagram description: ${cleanDashes(diagram.alt)}`);
-          if (diagram.keyPoints.length > 0) {
-            lines.push("");
-            for (const point of diagram.keyPoints) {
-              lines.push(`- ${cleanDashes(point)}`);
-            }
-          }
-          lines.push("");
+          lines.push(...renderDiagramMarkdown(diagram, "####"));
         }
         if (block.caption) {
           lines.push(`*${cleanDashes(block.caption)}*`);
@@ -146,20 +224,41 @@ function serializeBlocks(
       case "context-links":
         for (const link of block.links) {
           if (link.href) {
-            lines.push(`- Reference: [${cleanDashes(link.label)}](${link.href})`);
+            lines.push(`- Reference: [${cleanDashes(link.label)}](${link.href})`, "");
+          } else if (link.overviewSheet && note.overviewSheetImage) {
+            overviewState.rendered = true;
+            lines.push(
+              `#### Diagram: Complete FTP Overview Visual Sheet`,
+              "",
+              `Illustration URL: ${SITE_ORIGIN}${note.overviewSheetImage}`,
+              "",
+              "Combined visual summary of FTP Dual TCP Connections (Control TCP 21 and Data Channel), Active FTP (PORT), Passive FTP (PASV), authentication, cleartext transport, and anonymous access.",
+              ""
+            );
           } else if (link.inspectorId && note.inspectors[link.inspectorId]) {
             const target = note.inspectors[link.inspectorId];
-            lines.push(
-              `- Extended reference (${cleanDashes(link.label)}): see [${cleanDashes(target.label)}](#${slugifyHeading(target.label)})`
-            );
+            if (!renderedInspectorIds.has(target.id)) {
+              renderedInspectorIds.add(target.id);
+              lines.push(...renderInspectorMarkdown(target, diagramsById, embeddedDiagramIds, "####"));
+            } else {
+              lines.push(
+                `- Extended reference (${cleanDashes(link.label)}): see [${cleanDashes(target.label)}](#${slugifyHeading(target.label)})`,
+                ""
+              );
+            }
           } else if (link.diagramId && diagramsById[link.diagramId]) {
             const diagram = diagramsById[link.diagramId];
-            lines.push(
-              `- Diagram (${cleanDashes(link.label)}): see [${cleanDashes(diagram.title)}](#${slugifyHeading(diagram.title)})`
-            );
+            if (!embeddedDiagramIds.has(diagram.id)) {
+              embeddedDiagramIds.add(diagram.id);
+              lines.push(...renderDiagramMarkdown(diagram, "####"));
+            } else {
+              lines.push(
+                `- Diagram (${cleanDashes(link.label)}): see [${cleanDashes(diagram.title)}](#${slugifyHeading(diagram.title)})`,
+                ""
+              );
+            }
           }
         }
-        lines.push("");
         break;
 
       case "callout":
@@ -258,7 +357,10 @@ function serializeBlocks(
 export function renderSecurityNoteMarkdown(note: SecurityNoteEntry): string {
   const canonicalUrl = `${SITE_ORIGIN}/notes/security/${note.folderSlug}/${note.slug}/`;
   const markdownUrl = `${SITE_ORIGIN}/notes/security/${note.folderSlug}/${note.slug}.md`;
+  const diagramsById = Object.fromEntries(note.diagrams.map((d) => [d.id, d]));
   const embeddedDiagramIds = new Set<string>();
+  const renderedInspectorIds = new Set<string>();
+  const overviewState = { rendered: false };
 
   const out: string[] = [
     `# ${cleanDashes(note.title)}`,
@@ -282,68 +384,33 @@ export function renderSecurityNoteMarkdown(note: SecurityNoteEntry): string {
     out.push("");
     out.push(cleanDashes(part.intro));
     out.push("");
-    out.push(...serializeBlocks(part.blocks, note, embeddedDiagramIds));
+    out.push(
+      ...serializeBlocks(part.blocks, note, embeddedDiagramIds, renderedInspectorIds, overviewState)
+    );
   }
 
-  out.push("## Extended Technical Reference and Full Outputs");
-  out.push("");
-  out.push(
-    "This section preserves the full technical details, security takeaways, complete terminal outputs, directory structures, Nmap scan logs, and TLS certificate chains exposed interactively via pop-ups on the HTML page."
+  const remainingInspectors = Object.values(note.inspectors).filter(
+    (entry) => !renderedInspectorIds.has(entry.id)
   );
-  out.push("");
-
-  for (const entry of Object.values(note.inspectors)) {
-    out.push(`### ${cleanDashes(entry.label)}`);
-    out.push("");
-    out.push(`*Category: ${cleanDashes(entry.category)}*`);
-    out.push("");
-    out.push(cleanDashes(entry.shortDefinition));
-    out.push("");
-    if (entry.details.length > 0) {
-      for (const detail of entry.details) {
-        out.push(`- ${cleanDashes(detail)}`);
-      }
-      out.push("");
-    }
-    if (entry.securityNote) {
-      out.push(`**Security Note:** ${cleanDashes(entry.securityNote)}`);
-      out.push("");
-    }
-    if (entry.terminal) {
-      out.push(...formatTerminalBlock(entry.terminal));
-      out.push("");
-    }
-  }
-
   const remainingDiagrams = note.diagrams.filter((d) => !embeddedDiagramIds.has(d.id));
-  if (remainingDiagrams.length > 0 || note.overviewSheetImage) {
-    out.push("## Additional Diagrams and Visual Descriptions");
+  const includeOverviewSheet = Boolean(note.overviewSheetImage && !overviewState.rendered);
+
+  if (remainingInspectors.length > 0 || remainingDiagrams.length > 0 || includeOverviewSheet) {
+    out.push("## Additional Extended Reference");
     out.push("");
-    if (note.overviewSheetImage) {
-      out.push("### Complete Overview Visual Sheet");
-      out.push("");
+    for (const entry of remainingInspectors) {
+      out.push(...renderInspectorMarkdown(entry, diagramsById, embeddedDiagramIds, "###"));
+    }
+    if (includeOverviewSheet) {
+      out.push("### Complete Overview Visual Sheet", "");
       out.push(
-        `Combined one-page FTP reference sheet at ${SITE_ORIGIN}${note.overviewSheetImage} summarizing Dual TCP Connections (Control Port 21 and Data Channel), Active FTP (PORT), Passive FTP (PASV), and quick facts.`
+        `Combined one-page FTP reference sheet at ${SITE_ORIGIN}${note.overviewSheetImage} summarizing Dual TCP Connections (Control TCP 21 and Data Channel), Active FTP (PORT), Passive FTP (PASV), and quick facts.`,
+        ""
       );
-      out.push("");
     }
     for (const diagram of remainingDiagrams) {
-      out.push(`### ${cleanDashes(diagram.title)}`);
-      out.push("");
-      out.push(cleanDashes(diagram.summary));
-      out.push("");
-      if (diagram.imageSrc) {
-        out.push(`Illustration URL: ${SITE_ORIGIN}${diagram.imageSrc}`);
-        out.push("");
-      }
-      out.push(`Diagram description: ${cleanDashes(diagram.alt)}`);
-      if (diagram.keyPoints.length > 0) {
-        out.push("");
-        for (const pt of diagram.keyPoints) {
-          out.push(`- ${cleanDashes(pt)}`);
-        }
-      }
-      out.push("");
+      if (embeddedDiagramIds.has(diagram.id)) continue;
+      out.push(...renderDiagramMarkdown(diagram, "###"));
     }
   }
 
@@ -352,10 +419,30 @@ export function renderSecurityNoteMarkdown(note: SecurityNoteEntry): string {
   out.push(`- Author: [${AUTHOR_NAME}](${AUTHOR_URL}) (${SITE_ORIGIN}/)`);
   out.push(`- Canonical article: ${canonicalUrl}`);
   out.push("- Security section index: https://eng-asl.com/notes/security/");
-  out.push(
-    "- Practical command examples reference an authorized Hack The Box (HTB Academy) lab host (`10.129.14.136`)."
-  );
-  out.push("- Standard protocol & daemon documentation: RFC 959 (File Transfer Protocol), Linux `man vsftpd.conf`, OpenSSL `s_client`, and [Nmap Scripting Engine (NSE)](https://nmap.org/book/nse.html).");
+  if (note.authorAttributionNote) {
+    out.push(`- ${cleanDashes(note.authorAttributionNote)}`);
+  } else {
+    out.push(
+      "- Practical command examples reference an authorized Hack The Box (HTB Academy) lab host (`10.129.14.136`)."
+    );
+  }
+  if (note.references?.length) {
+    for (const refItem of note.references) {
+      if (refItem.href) {
+        out.push(
+          `- [${cleanDashes(refItem.label)}](${refItem.href})${refItem.detail ? `: ${cleanDashes(refItem.detail)}` : ""}`
+        );
+      } else {
+        out.push(
+          `- ${cleanDashes(refItem.label)}${refItem.detail ? `: ${cleanDashes(refItem.detail)}` : ""}`
+        );
+      }
+    }
+  } else {
+    out.push(
+      "- Standard protocol & daemon documentation: RFC 959 (File Transfer Protocol), Linux `man vsftpd.conf`, OpenSSL `s_client`, and [Nmap Scripting Engine (NSE)](https://nmap.org/book/nse.html)."
+    );
+  }
   out.push("");
 
   return `${out.join("\n").replace(/\n{3,}/g, "\n\n").trim()}\n`;

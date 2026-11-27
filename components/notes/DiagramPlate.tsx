@@ -11,8 +11,9 @@ interface DiagramPlateProps {
   diagram: DiagramSlot;
   inspectors?: Record<string, InspectorEntry>;
   onInspectTerm?: (inspectorId: string) => void;
-  onZoomDiagram?: (diagram: DiagramSlot) => void;
+  onZoomDiagram?: (diagram: DiagramSlot, event?: React.MouseEvent<HTMLElement>) => void;
   compact?: boolean;
+  hideSummary?: boolean;
   sizes?: string;
 }
 
@@ -20,13 +21,13 @@ export function DiagramPlate({
   diagram,
   onZoomDiagram,
   compact = false,
+  hideSummary = false,
   sizes = "(max-width: 900px) 100vw, 760px"
 }: DiagramPlateProps) {
   return (
     <figure
       className={`${styles.docFigure} ${compact ? styles.docFigureCompact : ""}`}
       data-diagram-id={diagram.id}
-      data-swap-path={diagram.swapPath}
     >
       <div
         className={`${styles.diagramCanvas} ${
@@ -49,18 +50,20 @@ export function DiagramPlate({
       <figcaption className={styles.docFigcaption}>
         <div className={styles.docFigcaptionCopy}>
           <strong className={styles.docFigureTitle}>{diagram.title}</strong>
-          <p className={styles.docFigureSummary}>{diagram.summary}</p>
+          {!hideSummary ? (
+            <p className={styles.docFigureSummary}>{diagram.summary}</p>
+          ) : null}
         </div>
 
         {onZoomDiagram ? (
           <button
             type="button"
             className={styles.contextBtn}
-            onClick={() => onZoomDiagram(diagram)}
-            aria-label={`View larger diagram: ${diagram.title}`}
+            onClick={(event) => onZoomDiagram(diagram, event)}
+            aria-label={`View Large: ${diagram.title}`}
           >
             <Maximize2 size={13} aria-hidden="true" />
-            <span>View larger</span>
+            <span>View Large</span>
           </button>
         ) : null}
       </figcaption>

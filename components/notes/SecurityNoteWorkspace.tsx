@@ -1,11 +1,20 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { BookOpen, ExternalLink, FileText, Maximize2, ShieldAlert } from "lucide-react";
+import {
+  BookOpen,
+  ExternalLink,
+  FileText,
+  Maximize2,
+  ShieldAlert,
+  Terminal,
+  Wrench
+} from "lucide-react";
 import type {
   DiagramSlot,
   InspectorEntry,
+  NoteActionKind,
   NoteContentBlock,
   NotePart,
   NoteSubSection,
@@ -16,6 +25,7 @@ import type { NoteWindowPosition } from "./useNoteDraggable";
 import { NoteTerminal } from "./NoteTerminal";
 import { DiagramPlate } from "./DiagramPlate";
 import { FloatingNoteWindow } from "./FloatingNoteWindow";
+import { NoteTableOfContents, type TocItem } from "./NoteTableOfContents";
 import styles from "./SecurityNotes.module.css";
 
 interface SecurityNoteWorkspaceProps {
@@ -37,11 +47,28 @@ function renderInlineCode(text: string): React.ReactNode {
   });
 }
 
+function renderActionIcon(actionKind?: NoteActionKind) {
+  switch (actionKind) {
+    case "view-diagram":
+    case "view-large":
+      return <Maximize2 size={13} aria-hidden="true" />;
+    case "setup-guide":
+      return <Wrench size={13} aria-hidden="true" />;
+    case "view-output":
+    case "view-example":
+      return <Terminal size={13} aria-hidden="true" />;
+    case "inspect":
+    default:
+      return <BookOpen size={13} aria-hidden="true" />;
+  }
+}
+
 export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
   const [showQuickRef, setShowQuickRef] = useState<boolean>(false);
   const [activeInspectorId, setActiveInspectorId] = useState<string | null>(null);
   const [previewDiagram, setPreviewDiagram] = useState<DiagramSlot | null>(null);
   const [floatingPos, setFloatingPos] = useState<NoteWindowPosition | undefined>(undefined);
+  const lastTriggerRef = useRef<HTMLElement | null>(null);
 
   const diagramsById = useMemo(() => {
     const map: Record<string, DiagramSlot> = {};
@@ -51,6 +78,47 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
     return map;
   }, [note.diagrams]);
 
+  const tocItems: TocItem[] = useMemo(() => {
+    return note.parts.map((part) => {
+      if (part.tocSubheadings) {
+        return {
+          id: `part-${part.id}`,
+          title: part.shortTitle,
+          subheadings: part.tocSubheadings
+        };
+      }
+      const subheadings: Array<{ id: string; title: string }> = [];
+      for (const block of part.blocks) {
+        if (block.type === "subheading" && (block.level ?? 3) === 3) {
+          subheadings.push({
+            id: block.id || slugifyHeading(block.text),
+            title: block.text
+          });
+        } else if (block.type === "sub-sections") {
+          for (const sub of block.sections) {
+            subheadings.push({
+              id: slugifyHeading(sub.title),
+              title: sub.shortLabel || sub.title
+            });
+          }
+        }
+      }
+      return {
+        id: `part-${part.id}`,
+        title: part.shortTitle,
+        subheadings
+      };
+    });
+  }, [note.parts]);
+
+  const captureTrigger = (event?: React.MouseEvent<HTMLElement>) => {
+    if (event?.currentTarget instanceof HTMLElement) {
+      lastTriggerRef.current = event.currentTarget;
+    } else if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) {
+      lastTriggerRef.current = document.activeElement;
+    }
+  };
+
   const computePopupPosition = (
     wide: boolean,
     event?: React.MouseEvent<HTMLElement>
@@ -58,7 +126,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
     if (typeof window === "undefined") return undefined;
     const winW = window.innerWidth;
     const winH = window.innerHeight;
-    const width = Math.min(wide ? 720 : 500, winW - 24);
+    const width = Math.min(wide ? 720 : 520, winW - 24);
 
     if (winW <= 720) {
       return { x: 12, y: 76 };
@@ -67,14 +135,14 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
     if (wide) {
       return {
         x: Math.max(12, Math.round((winW - width) / 2)),
-        y: 80
+        y: 84
       };
     }
 
     const rect = event?.currentTarget?.getBoundingClientRect?.();
     const pointerY = event && event.clientY > 0 ? event.clientY : rect?.top ?? 120;
     const x = Math.max(12, winW - width - 24);
-    const y = Math.min(Math.max(76, pointerY - 36), Math.max(76, winH - 420));
+    const y = Math.min(Math.max(76, pointerY - 36), Math.max(76, winH - 440));
     return { x, y };
   };
 
@@ -82,11 +150,12 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
     inspectorId: string,
     event?: React.MouseEvent<HTMLElement>
   ) => {
-    if (!note.inspectors[inspectorId]) return;
-    if (!activeInspectorId && !previewDiagram) {
-      const nextPos = computePopupPosition(false, event);
-      if (nextPos) setFloatingPos(nextPos);
-    }
+    const entry = note.inspectors[inspectorId];
+    if (!entry) return;
+    captureTrigger(event);
+    const needsWide = Boolean(entry.diagramId || entry.tables?.length);
+    const nextPos = computePopupPosition(needsWide, event);
+    if (nextPos) setFloatingPos(nextPos);
     setPreviewDiagram(null);
     setActiveInspectorId(inspectorId);
   };
@@ -95,10 +164,9 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
     diagram: DiagramSlot,
     event?: React.MouseEvent<HTMLElement>
   ) => {
-    if (!activeInspectorId && !previewDiagram) {
-      const nextPos = computePopupPosition(true, event);
-      if (nextPos) setFloatingPos(nextPos);
-    }
+    captureTrigger(event);
+    const nextPos = computePopupPosition(true, event);
+    if (nextPos) setFloatingPos(nextPos);
     setActiveInspectorId(null);
     setPreviewDiagram(diagram);
   };
@@ -107,20 +175,19 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
     openDiagramPreview(
       {
         id: "ftp-overview-full-sheet",
-        figLabel: "Overview Sheet",
-        partId: "overview",
+        figLabel: "Overview Diagram",
+        partId: "how-ftp-works",
         title: "FTP Complete Overview Diagram",
         summary:
-          "Complete one-page FTP reference combining Two TCP Connections, Active FTP, Passive FTP, and quick facts.",
+          "Complete visual summary connecting Two TCP Connections (Control TCP 21 and Data Channel), Active FTP (PORT), Passive FTP (PASV), authentication, security, and anonymous access.",
         keyPoints: [
-          "Control Channel on TCP port 21 and separate Data Channel.",
-          "Active mode (PORT) initiates data back from server port 20.",
-          "Passive mode (PASV) keeps both sockets client-initiated for NAT compatibility."
+          "Control Channel runs on TCP port 21 for commands and numeric status codes.",
+          "Data Channel uses a separate TCP connection (traditionally server source port 20 in Active mode when configured, or a server-advertised ephemeral port in Passive mode).",
+          "Arrows in mode diagrams indicate TCP connection initiation direction, not file transfer direction."
         ],
         imageSrc: note.overviewSheetImage,
         swapPath: "public/media/notes/security/footprinting/ftp/ftp-overview-full.jpg",
-        alt: "Full FTP overview infographic showing Two TCP Connections, Active FTP, Passive FTP, and Quick Facts.",
-        relatedInspectorIds: ["ftp-protocol", "active-ftp", "passive-ftp", "ftp-ftps-sftp"]
+        alt: "Complete FTP overview diagram showing Control Channel on TCP 21, Data Channel, Active FTP, Passive FTP, authentication, security, and anonymous FTP."
       },
       event
     );
@@ -129,6 +196,12 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
   const closeFloating = () => {
     setActiveInspectorId(null);
     setPreviewDiagram(null);
+    const trigger = lastTriggerRef.current;
+    if (trigger && trigger.isConnected) {
+      requestAnimationFrame(() => {
+        trigger.focus({ preventScroll: true });
+      });
+    }
   };
 
   const groupedInspectorEntries = useMemo(() => {
@@ -228,8 +301,9 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                   diagram={diagram}
                   inspectors={note.inspectors}
                   onInspectTerm={(id) => openInspector(id)}
-                  onZoomDiagram={(item) => openDiagramPreview(item)}
+                  onZoomDiagram={(item, ev) => openDiagramPreview(item, ev)}
                   compact={isPair}
+                  hideSummary={Boolean(block.hideSummary)}
                   sizes={
                     isPair ? "(max-width: 720px) 100vw, 370px" : "(max-width: 900px) 100vw, 760px"
                   }
@@ -259,6 +333,20 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                   </a>
                 );
               }
+              if (link.overviewSheet) {
+                return (
+                  <button
+                    key={`${key}-overview-${idx}`}
+                    type="button"
+                    className={styles.contextBtn}
+                    data-testid={`diagram-trigger-overview-sheet`}
+                    onClick={(e) => openFullOverviewSheet(e)}
+                  >
+                    <Maximize2 size={13} aria-hidden="true" />
+                    <span>{link.label}</span>
+                  </button>
+                );
+              }
               if (link.diagramId) {
                 const targetDiagram = diagramsById[link.diagramId];
                 if (!targetDiagram) return null;
@@ -270,7 +358,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                     data-testid={`diagram-trigger-${link.diagramId}`}
                     onClick={(e) => openDiagramPreview(targetDiagram, e)}
                   >
-                    <Maximize2 size={12} aria-hidden="true" />
+                    <Maximize2 size={13} aria-hidden="true" />
                     <span>{link.label}</span>
                   </button>
                 );
@@ -284,7 +372,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                     data-testid={`popup-trigger-${link.inspectorId}`}
                     onClick={(e) => openInspector(link.inspectorId!, e)}
                   >
-                    <BookOpen size={12} aria-hidden="true" />
+                    {renderActionIcon(link.actionKind)}
                     <span>{link.label}</span>
                   </button>
                 );
@@ -332,7 +420,10 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
       case "terminal":
         return <NoteTerminal key={key} terminal={block.terminal} />;
 
-      case "settings-table":
+      case "settings-table": {
+        const hasActions = block.rows.some(
+          (row) => Boolean(row.inspectorId && note.inspectors[row.inspectorId])
+        );
         return (
           <div key={key} className={styles.tableWrap}>
             {block.title ? <p className={styles.tableCaption}>{block.title}</p> : null}
@@ -342,7 +433,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                   <tr>
                     <th>Setting</th>
                     <th>Description</th>
-                    <th className={styles.tableActionCol}>Reference</th>
+                    {hasActions ? <th className={styles.tableActionCol}>Reference</th> : null}
                   </tr>
                 </thead>
                 <tbody>
@@ -352,16 +443,20 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                         <code className={styles.settingCode}>{row.setting}</code>
                       </td>
                       <td>{renderInlineCode(row.summary)}</td>
-                      <td className={styles.tableActionCell}>
-                        <button
-                          type="button"
-                          className={styles.tableDetailBtn}
-                          data-testid={`inspect-${row.inspectorId}`}
-                          onClick={(e) => openInspector(row.inspectorId, e)}
-                        >
-                          Details
-                        </button>
-                      </td>
+                      {hasActions ? (
+                        <td className={styles.tableActionCell}>
+                          {row.inspectorId && note.inspectors[row.inspectorId] ? (
+                            <button
+                              type="button"
+                              className={styles.tableDetailBtn}
+                              data-testid={`inspect-${row.inspectorId}`}
+                              onClick={(e) => openInspector(row.inspectorId!, e)}
+                            >
+                              {row.actionLabel || "Inspect"}
+                            </button>
+                          ) : null}
+                        </td>
+                      ) : null}
                     </tr>
                   ))}
                 </tbody>
@@ -369,9 +464,12 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
             </div>
           </div>
         );
+      }
 
       case "comparison-table": {
-        const hasActions = block.rows.some((row) => Boolean(row.inspectorId));
+        const hasActions = block.rows.some(
+          (row) => Boolean(row.inspectorId && note.inspectors[row.inspectorId])
+        );
         return (
           <div key={key} className={styles.tableWrap}>
             {block.title ? <p className={styles.tableCaption}>{block.title}</p> : null}
@@ -399,14 +497,14 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                       ))}
                       {hasActions ? (
                         <td className={styles.tableActionCell}>
-                          {row.inspectorId ? (
+                          {row.inspectorId && note.inspectors[row.inspectorId] ? (
                             <button
                               type="button"
                               className={styles.tableDetailBtn}
                               data-testid={`inspect-${row.inspectorId}`}
                               onClick={(e) => openInspector(row.inspectorId!, e)}
                             >
-                              Details
+                              {row.actionLabel || "Inspect"}
                             </button>
                           ) : null}
                         </td>
@@ -420,7 +518,10 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
         );
       }
 
-      case "response-codes":
+      case "response-codes": {
+        const hasActions = block.codes.some(
+          (item) => Boolean(item.inspectorId && note.inspectors[item.inspectorId])
+        );
         return (
           <div key={key} className={styles.tableWrap}>
             {block.title ? <p className={styles.tableCaption}>{block.title}</p> : null}
@@ -430,7 +531,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                   <tr>
                     <th>Code</th>
                     <th>Meaning</th>
-                    <th className={styles.tableActionCol}>Reference</th>
+                    {hasActions ? <th className={styles.tableActionCol}>Reference</th> : null}
                   </tr>
                 </thead>
                 <tbody>
@@ -440,16 +541,20 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                         <code className={styles.settingCode}>{item.code}</code>
                       </td>
                       <td>{item.meaning}</td>
-                      <td className={styles.tableActionCell}>
-                        <button
-                          type="button"
-                          className={styles.tableDetailBtn}
-                          data-testid={`code-trigger-${item.code}`}
-                          onClick={(e) => openInspector(item.inspectorId, e)}
-                        >
-                          Details
-                        </button>
-                      </td>
+                      {hasActions ? (
+                        <td className={styles.tableActionCell}>
+                          {item.inspectorId && note.inspectors[item.inspectorId] ? (
+                            <button
+                              type="button"
+                              className={styles.tableDetailBtn}
+                              data-testid={`code-trigger-${item.code}`}
+                              onClick={(e) => openInspector(item.inspectorId!, e)}
+                            >
+                              Inspect
+                            </button>
+                          ) : null}
+                        </td>
+                      ) : null}
                     </tr>
                   ))}
                 </tbody>
@@ -457,6 +562,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
             </div>
           </div>
         );
+      }
 
       case "risk-list":
         return (
@@ -588,7 +694,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
               data-testid="open-full-sheet-btn"
             >
               <Maximize2 size={13} aria-hidden="true" />
-              <span>View overview summary diagram</span>
+              <span>View Complete Overview Diagram</span>
             </button>
 
             <button
@@ -601,8 +707,8 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
               <BookOpen size={13} aria-hidden="true" />
               <span>
                 {showQuickRef
-                  ? "Hide command & directive index"
-                  : `Browse command & directive index (${Object.keys(note.inspectors).length})`}
+                  ? "Hide extended reference index"
+                  : `Extended reference index (${Object.keys(note.inspectors).length})`}
               </span>
             </button>
 
@@ -619,9 +725,9 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
         </header>
 
         {showQuickRef ? (
-          <section className={styles.quickRefDrawer} aria-label="Command and directive index">
+          <section className={styles.quickRefDrawer} aria-label="Extended reference index">
             <div className={styles.quickRefHeader}>
-              <p>Select any topic or directive to inspect detailed usage in a floating window.</p>
+              <p>Select any topic or extended procedure to open it in a floating reference window.</p>
               <button
                 type="button"
                 className={styles.contextBtn}
@@ -653,6 +759,8 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
         ) : null}
 
         <div className={styles.docLayout}>
+          <NoteTableOfContents items={tocItems} />
+
           <article className={styles.docBody} data-testid="vertical-note-article">
             {note.parts.map((part) => renderPartBody(part))}
 
@@ -662,64 +770,106 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
               data-testid="extended-reference-details"
             >
               <summary className={styles.extendedRefSummary}>
-                Complete extended reference and full command outputs (
+                Extended reference, examples, and terminal outputs (
                 {Object.keys(note.inspectors).length} entries)
               </summary>
               <div className={styles.extendedRefList}>
-                {Object.values(note.inspectors).map((entry) => (
-                  <section
-                    key={entry.id}
-                    id={`ref-${entry.id}`}
-                    className={styles.extendedRefItem}
-                  >
-                    <h3>{entry.label}</h3>
-                    <p className={styles.docParagraph}>{entry.shortDefinition}</p>
-                    {entry.details.length > 0 ? (
-                      <ul className={styles.docList}>
-                        {entry.details.map((detail, dIdx) => (
-                          <li key={dIdx}>{detail}</li>
-                        ))}
-                      </ul>
-                    ) : null}
-                    {entry.securityNote ? (
+                {Object.values(note.inspectors).map((entry) => {
+                  const terminals = [
+                    ...(entry.terminal ? [entry.terminal] : []),
+                    ...(entry.terminals ?? [])
+                  ];
+                  return (
+                    <section
+                      key={entry.id}
+                      id={`ref-${entry.id}`}
+                      className={styles.extendedRefItem}
+                    >
+                      <h3>{entry.label}</h3>
+                      {entry.sourceLabel ? (
+                        <p className={styles.floatingSourceLabel}>{entry.sourceLabel}</p>
+                      ) : null}
                       <p className={styles.docParagraph}>
-                        <strong>Security note:</strong> {entry.securityNote}
+                        {renderInlineCode(entry.shortDefinition)}
                       </p>
-                    ) : null}
-                    {entry.terminal ? (
-                      <pre className={styles.codeSamplePre}>
-                        <code>
-                          {entry.terminal.lines
-                            .map((line) =>
-                              line.kind === "command"
-                                ? `${line.prompt || "$"} ${line.text}`
-                                : line.kind === "input"
-                                  ? `${line.prompt || "Input:"} ${line.text}`
-                                  : line.text
-                            )
-                            .join("\n")}
-                        </code>
-                      </pre>
-                    ) : null}
-                  </section>
-                ))}
+                      {entry.steps?.length ? (
+                        <ol className={styles.floatingStepList}>
+                          {entry.steps.map((step, sIdx) => (
+                            <li key={sIdx}>{renderInlineCode(step)}</li>
+                          ))}
+                        </ol>
+                      ) : null}
+                      {entry.details.length > 0 ? (
+                        <ul className={styles.docList}>
+                          {entry.details.map((detail, dIdx) => (
+                            <li key={dIdx}>{renderInlineCode(detail)}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      {entry.tables?.map((tbl, tIdx) => (
+                        <div key={tIdx} className={styles.tableScroll}>
+                          {tbl.caption ? (
+                            <p className={styles.tableCaption}>{tbl.caption}</p>
+                          ) : null}
+                          <table className={styles.docTable}>
+                            <thead>
+                              <tr>
+                                {tbl.columns.map((col) => (
+                                  <th key={col}>{col}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {tbl.rows.map((row, rIdx) => (
+                                <tr key={rIdx}>
+                                  {row.map((cell, cIdx) => (
+                                    <td key={cIdx}>
+                                      {cIdx === 0 ? (
+                                        <code className={styles.settingCode}>{cell}</code>
+                                      ) : (
+                                        renderInlineCode(cell)
+                                      )}
+                                    </td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ))}
+                      {terminals.map((term) => (
+                        <pre key={term.id} className={styles.codeSamplePre}>
+                          <code>
+                            {term.lines
+                              .map((line) =>
+                                line.kind === "command"
+                                  ? `${line.prompt || "$"} ${line.text}`
+                                  : line.kind === "input"
+                                    ? `${line.prompt || "Input:"} ${line.text}`
+                                    : line.text
+                              )
+                              .join("\n")}
+                          </code>
+                        </pre>
+                      ))}
+                      {entry.securityNote ? (
+                        <p className={styles.docParagraph}>
+                          <strong>Security note:</strong> {renderInlineCode(entry.securityNote)}
+                        </p>
+                      ) : null}
+                    </section>
+                  );
+                })}
               </div>
             </details>
 
             <footer className={styles.docAttribution} aria-label="Attribution and references">
               <p className={styles.docParagraph}>
-                Written by <Link href="/about">Ahmed Ibrahim Asl (ASL)</Link>. Practical host
-                examples use authorized Hack The Box (HTB Academy) lab targets. Additional
-                references: RFC 959, Linux <code>man vsftpd.conf</code>, OpenSSL{" "}
-                <code>s_client</code>, and{" "}
-                <a
-                  href="https://nmap.org/book/nse.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Nmap Scripting Engine (NSE)
-                </a>
-                . Plain{" "}
+                Written by <Link href="/about">Ahmed Ibrahim Asl (ASL)</Link>.{" "}
+                {note.authorAttributionNote
+                  ? `${note.authorAttributionNote} `
+                  : "Authorized lab examples reference Hack The Box Academy host 10.129.14.136. "}
+                Plain{" "}
                 <a
                   href={`/notes/security/${note.folderSlug}/${note.slug}.md`}
                   type="text/markdown"
@@ -728,25 +878,28 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                 </a>
                 .
               </p>
+              {note.references?.length ? (
+                <ul className={styles.docList}>
+                  {note.references.map((refItem) => (
+                    <li key={refItem.label}>
+                      {refItem.href ? (
+                        <a
+                          href={refItem.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {refItem.label}
+                        </a>
+                      ) : (
+                        <strong>{refItem.label}</strong>
+                      )}
+                      {refItem.detail ? `: ${refItem.detail}` : ""}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </footer>
           </article>
-
-          <aside
-            className={styles.docToc}
-            aria-label="On this page"
-            data-testid="article-jump-nav"
-          >
-            <p className={styles.docTocTitle}>On this page</p>
-            <ol className={styles.docTocList}>
-              {note.parts.map((part) => (
-                <li key={part.id}>
-                  <a href={`#part-${part.id}`} className={styles.docTocLink}>
-                    {part.shortTitle}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </aside>
         </div>
       </div>
 

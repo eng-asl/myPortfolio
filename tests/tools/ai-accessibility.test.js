@@ -33,15 +33,21 @@ test("published Markdown endpoints exist, exclude drafts, use LF, and omit em/en
   }
 });
 
-test("ftp.md includes complete core text, tables, pop-up outputs, diagrams, attribution, and canonical URL", () => {
+test("ftp.md includes complete Stage 2 reading-order text, tables, inline extended references, diagrams, attribution, and canonical URL without outer code fence", () => {
   const ftpMd = read(join("public", "notes", "security", "footprinting", "ftp.md"));
+
+  assert.equal(ftpMd.includes("````"), false, "ftp.md must not wrap content in an outer four-backtick fence");
+  assert.equal(
+    ftpMd.includes("## Extended Technical Reference and Full Outputs"),
+    false,
+    "ftp.md must place extended references in logical reading order instead of a disconnected dump"
+  );
 
   const requiredTokens = [
     "# FTP and vsFTPd Footprinting",
     "Ahmed Ibrahim Asl (ASL)",
     "https://eng-asl.com/notes/security/footprinting/ftp/",
     "https://eng-asl.com/notes/security/footprinting/ftp.md",
-    "## Extended Technical Reference and Full Outputs",
     "listen=NO",
     "secure_chroot_dir=/var/run/vsftpd/empty",
     "verify error:num=18",
@@ -51,13 +57,30 @@ test("ftp.md includes complete core text, tables, pop-up outputs, diagrams, attr
     "Use of PORT cmds: on",
     "Downloaded: 15 files",
     "master.inlanefreight.htb",
+    "Abbreviated output",
+    "Illustrative example",
+    "Reconstructed directory tree",
+    "https://datatracker.ietf.org/doc/html/rfc959",
+    "https://security.appspot.com/vsftpd/vsftpd_conf.html",
     "https://nmap.org/book/nse.html",
-    "Hack The Box"
+    "Hack The Box Academy"
   ];
 
   for (const token of requiredTokens) {
     assert.ok(ftpMd.includes(token), `ftp.md missing expected content: ${token}`);
   }
+
+  const controlIdx = ftpMd.indexOf("#### Inspect Control Channel");
+  const activePassiveIdx = ftpMd.indexOf("## Active and Passive FTP");
+  const vsftpdIdx = ftpMd.indexOf("## vsFTPd");
+  const setupIdx = ftpMd.indexOf("#### vsFTPd Setup Guide");
+  const configIdx = ftpMd.indexOf("## vsFTPd Configuration Settings");
+  const treeIdx = ftpMd.indexOf("#### Recursive Directory Structure (ls -R)");
+  const transfersIdx = ftpMd.indexOf("## Downloading and Uploading Files");
+
+  assert.ok(controlIdx > 0 && controlIdx < activePassiveIdx, "Inspect Control Channel should appear inside How FTP Works");
+  assert.ok(setupIdx > vsftpdIdx && setupIdx < configIdx, "vsFTPd Setup Guide should appear inside vsFTPd");
+  assert.ok(treeIdx > 0 && treeIdx < transfersIdx, "Recursive directory tree should appear before Downloading and Uploading Files");
 });
 
 test("llms.txt and llms-full.txt index published notes, projects, publications, and exclude drafts", () => {

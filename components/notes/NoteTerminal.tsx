@@ -108,6 +108,9 @@ export function NoteTerminal({ terminal, compact = false }: NoteTerminalProps) {
         <div className={styles.terminalTitleGroup}>
           <Terminal size={13} aria-hidden="true" />
           <span className={styles.terminalTitle}>{terminal.title}</span>
+          {terminal.sourceLabel ? (
+            <span className={styles.terminalSourceLabel}>({terminal.sourceLabel})</span>
+          ) : null}
         </div>
         <div className={styles.terminalActions}>
           <button
