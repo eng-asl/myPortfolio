@@ -1,10 +1,11 @@
 import React from "react";
+import { JsonLd } from "@/components/JsonLd";
 import { WorkHub } from "@/components/WorkHub";
 import { WorkResearchAndTeaching } from "@/components/WorkResearchAndTeaching";
 import { LegacyWorkLinks } from "@/components/LegacyWorkLinks";
-import { projects } from "@/data/portfolio";
+import { projects, publications } from "@/data/portfolio";
 import { workCategories } from "@/data/work-categories";
-import { createPageMetadata } from "@/lib/seo";
+import { createPageMetadata, createPublicationsJsonLd } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
   title: "Engineering, Robotics and Website Projects",
@@ -21,6 +22,7 @@ export default function WorkPage() {
   });
   return (
     <div className="asl-page">
+      <JsonLd data={createPublicationsJsonLd(publications)} />
       <LegacyWorkLinks destinations={destinations} />
       <section className="page-intro shell asl-page-intro">
         <p className="eyebrow">Work log / verified builds</p>

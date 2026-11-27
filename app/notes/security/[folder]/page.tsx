@@ -2,8 +2,9 @@ import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpRight } from "lucide-react";
+import { JsonLd } from "@/components/JsonLd";
 import { getAllSecurityFolders, getSecurityFolder } from "@/data/notes/security";
-import { createPageMetadata } from "@/lib/seo";
+import { createBreadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
 import styles from "@/components/notes/SecurityNotes.module.css";
 
 interface PageProps {
@@ -33,8 +34,16 @@ export default async function SecurityFolderPage({ params }: PageProps) {
   const folder = getSecurityFolder(folderSlug);
   if (!folder) notFound();
 
+  const breadcrumb = createBreadcrumbJsonLd([
+    { name: "Home", pathname: "/" },
+    { name: "Notes", pathname: "/notes/" },
+    { name: "Security", pathname: "/notes/security/" },
+    { name: folder.title, pathname: `/notes/security/${folder.slug}/` }
+  ]);
+
   return (
     <div className="asl-page">
+      <JsonLd data={breadcrumb} />
       <div className={`shell ${styles.indexShell}`}>
         <nav className={styles.breadcrumbBar} aria-label="Breadcrumb">
           <Link href="/notes" className={styles.breadcrumbLink}>

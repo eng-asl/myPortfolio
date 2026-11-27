@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { BookOpen, ExternalLink, Maximize2, ShieldAlert } from "lucide-react";
+import { BookOpen, ExternalLink, FileText, Maximize2, ShieldAlert } from "lucide-react";
 import type {
   DiagramSlot,
   InspectorEntry,
@@ -11,6 +11,7 @@ import type {
   NoteSubSection,
   SecurityNoteEntry
 } from "@/types/security-notes";
+import { slugifyHeading } from "@/lib/ai-markdown";
 import type { NoteWindowPosition } from "./useNoteDraggable";
 import { NoteTerminal } from "./NoteTerminal";
 import { DiagramPlate } from "./DiagramPlate";
@@ -141,7 +142,9 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
 
   const renderSubSection = (sub: NoteSubSection) => (
     <div key={sub.id} className={styles.subSectionBlock}>
-      <h3>{sub.title}</h3>
+      <h3 id={slugifyHeading(sub.title)} className={styles.docSubheading}>
+        {sub.title}
+      </h3>
       {sub.intro ? <p className={styles.docParagraph}>{renderInlineCode(sub.intro)}</p> : null}
       <div className={styles.blocksStack}>
         {sub.blocks.map((block, idx) => renderBlock(block, `${sub.id}-${idx}`))}
@@ -173,16 +176,18 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
           </div>
         );
 
-      case "subheading":
+      case "subheading": {
+        const headingId = block.id || slugifyHeading(block.text);
         return block.level === 4 ? (
-          <h4 key={key} id={block.id} className={styles.docSubheading}>
+          <h4 key={key} id={headingId} className={styles.docSubheading}>
             {block.text}
           </h4>
         ) : (
-          <h3 key={key} id={block.id} className={styles.docSubheading}>
+          <h3 key={key} id={headingId} className={styles.docSubheading}>
             {block.text}
           </h3>
         );
+      }
 
       case "bullets":
         return (
@@ -556,6 +561,18 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
           <h1 className={styles.docTitle}>{note.title}</h1>
           <p className={styles.docLead}>{note.summary}</p>
           <div className={styles.docMetaRow}>
+            <span>
+              By <Link href="/about">Ahmed Ibrahim Asl (ASL)</Link>
+            </span>
+            <span aria-hidden="true">/</span>
+            <span>Published {note.publishedAt}</span>
+            {note.updatedAt && note.updatedAt !== note.publishedAt ? (
+              <>
+                <span aria-hidden="true">/</span>
+                <span>Updated {note.updatedAt}</span>
+              </>
+            ) : null}
+            <span aria-hidden="true">/</span>
             <span>{note.ports}</span>
             <span aria-hidden="true">/</span>
             <span>{note.daemon}</span>
@@ -588,6 +605,16 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                   : `Browse command & directive index (${Object.keys(note.inspectors).length})`}
               </span>
             </button>
+
+            <a
+              href={`/notes/security/${note.folderSlug}/${note.slug}.md`}
+              type="text/markdown"
+              className={styles.contextExternalLink}
+              data-testid="markdown-source-link"
+            >
+              <FileText size={13} aria-hidden="true" />
+              <span>Markdown version (.md)</span>
+            </a>
           </div>
         </header>
 
@@ -628,6 +655,80 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
         <div className={styles.docLayout}>
           <article className={styles.docBody} data-testid="vertical-note-article">
             {note.parts.map((part) => renderPartBody(part))}
+
+            <details
+              id="extended-reference"
+              className={styles.extendedRefDetails}
+              data-testid="extended-reference-details"
+            >
+              <summary className={styles.extendedRefSummary}>
+                Complete extended reference and full command outputs (
+                {Object.keys(note.inspectors).length} entries)
+              </summary>
+              <div className={styles.extendedRefList}>
+                {Object.values(note.inspectors).map((entry) => (
+                  <section
+                    key={entry.id}
+                    id={`ref-${entry.id}`}
+                    className={styles.extendedRefItem}
+                  >
+                    <h3>{entry.label}</h3>
+                    <p className={styles.docParagraph}>{entry.shortDefinition}</p>
+                    {entry.details.length > 0 ? (
+                      <ul className={styles.docList}>
+                        {entry.details.map((detail, dIdx) => (
+                          <li key={dIdx}>{detail}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                    {entry.securityNote ? (
+                      <p className={styles.docParagraph}>
+                        <strong>Security note:</strong> {entry.securityNote}
+                      </p>
+                    ) : null}
+                    {entry.terminal ? (
+                      <pre className={styles.codeSamplePre}>
+                        <code>
+                          {entry.terminal.lines
+                            .map((line) =>
+                              line.kind === "command"
+                                ? `${line.prompt || "$"} ${line.text}`
+                                : line.kind === "input"
+                                  ? `${line.prompt || "Input:"} ${line.text}`
+                                  : line.text
+                            )
+                            .join("\n")}
+                        </code>
+                      </pre>
+                    ) : null}
+                  </section>
+                ))}
+              </div>
+            </details>
+
+            <footer className={styles.docAttribution} aria-label="Attribution and references">
+              <p className={styles.docParagraph}>
+                Written by <Link href="/about">Ahmed Ibrahim Asl (ASL)</Link>. Practical host
+                examples use authorized Hack The Box (HTB Academy) lab targets. Additional
+                references: RFC 959, Linux <code>man vsftpd.conf</code>, OpenSSL{" "}
+                <code>s_client</code>, and{" "}
+                <a
+                  href="https://nmap.org/book/nse.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Nmap Scripting Engine (NSE)
+                </a>
+                . Plain{" "}
+                <a
+                  href={`/notes/security/${note.folderSlug}/${note.slug}.md`}
+                  type="text/markdown"
+                >
+                  Markdown version
+                </a>
+                .
+              </p>
+            </footer>
           </article>
 
           <aside

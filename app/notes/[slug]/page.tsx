@@ -9,7 +9,12 @@ import {
   renderPost
 } from "@/lib/content";
 import { formatDate } from "@/lib/utils";
-import { createArticleJsonLd, createPageMetadata } from "@/lib/seo";
+import {
+  createArticleJsonLd,
+  createBreadcrumbJsonLd,
+  createPageMetadata
+} from "@/lib/seo";
+import { absoluteUrl } from "@/lib/site";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -34,11 +39,18 @@ export async function generateMetadata({ params }: PageProps) {
 
   return {
     ...metadata,
+    alternates: {
+      ...metadata.alternates,
+      types: {
+        "text/markdown": absoluteUrl(`/notes/${post.slug}.md`)
+      }
+    },
     openGraph: {
       ...metadata.openGraph,
       type: "article",
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt || post.publishedAt,
+      authors: [absoluteUrl("/about/")],
       tags: post.tags
     }
   };
@@ -56,9 +68,16 @@ export default async function ArticlePage({ params }: PageProps) {
   const next = posts[currentIndex - 1];
   const wasUpdated = post.updatedAt && post.updatedAt !== post.publishedAt;
 
+  const breadcrumb = createBreadcrumbJsonLd([
+    { name: "Home", pathname: "/" },
+    { name: "Notes", pathname: "/notes/" },
+    { name: post.title, pathname: `/notes/${post.slug}/` }
+  ]);
+
   return (
     <article className="asl-page article-page asl-article">
       <JsonLd data={createArticleJsonLd(post)} />
+      <JsonLd data={breadcrumb} />
 
       <header className="article-header shell">
         <div className="article-header-inner">
@@ -69,13 +88,16 @@ export default async function ArticlePage({ params }: PageProps) {
           <p className="article-summary">{post.summary}</p>
           <div className="article-meta-line mono">
             <span>
-              By <Link href="/about">Ahmed Asl</Link>
+              By <Link href="/about">Ahmed Ibrahim Asl (ASL)</Link>
             </span>
             <span>Published {formatDate(post.publishedAt)}</span>
             {wasUpdated ? <span>Updated {formatDate(post.updatedAt)}</span> : null}
             <span>{post.readingTime} min read</span>
             {post.difficulty ? <span>{post.difficulty}</span> : null}
             {post.part ? <span>Part {post.part}</span> : null}
+            <a href={`/notes/${post.slug}.md`} type="text/markdown">
+              Markdown (.md)
+            </a>
           </div>
           {post.tags.length ? (
             <div className="tag-row article-tags">

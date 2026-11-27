@@ -83,6 +83,17 @@
   color: var(--asl-muted);
 }
 
+.docMetaRow a {
+  color: var(--asl-gold-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.docMetaRow a:hover,
+.docMetaRow a:focus-visible {
+  color: var(--asl-gold);
+}
+
 .docActionRow {
   display: flex;
   flex-wrap: wrap;
@@ -204,6 +215,7 @@
 }
 
 .subSectionBlock h3 {
+  scroll-margin-top: calc(var(--asl-header, 72px) + 24px);
   margin: 0;
   font-size: 1.18rem;
   font-weight: 600;
@@ -211,6 +223,7 @@
 }
 
 .docSubheading {
+  scroll-margin-top: calc(var(--asl-header, 72px) + 24px);
   margin: 12px 0 0;
   font-size: 1.14rem;
   font-weight: 600;
@@ -716,6 +729,66 @@ h4.docSubheading {
 
 .docTocLink:hover,
 .docTocLink:focus-visible {
+  color: var(--asl-gold);
+}
+
+/* Server-Rendered Non-JS Accessible Extended Reference & Attribution */
+.extendedRefDetails {
+  padding-top: 16px;
+  border-top: 1px solid var(--asl-line);
+}
+
+.extendedRefSummary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--asl-gold-soft);
+  font-family: var(--asl-mono);
+  font-size: 0.84rem;
+  cursor: pointer;
+}
+
+.extendedRefSummary:hover,
+.extendedRefSummary:focus-visible {
+  color: var(--asl-gold);
+}
+
+.extendedRefList {
+  padding-top: 16px;
+  display: grid;
+  gap: 22px;
+}
+
+.extendedRefItem {
+  scroll-margin-top: calc(var(--asl-header, 72px) + 24px);
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--asl-line);
+  display: grid;
+  gap: 8px;
+}
+
+.extendedRefItem h3 {
+  margin: 0;
+  font-size: 1.04rem;
+  font-weight: 600;
+  color: var(--asl-text);
+}
+
+.docAttribution {
+  padding-top: 16px;
+  border-top: 1px solid var(--asl-line);
+  color: var(--asl-muted);
+  font-size: 0.9rem;
+}
+
+.docAttribution a {
+  color: var(--asl-gold-soft);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.docAttribution a:hover,
+.docAttribution a:focus-visible {
   color: var(--asl-gold);
 }
 

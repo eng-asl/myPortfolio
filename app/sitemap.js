@@ -39,17 +39,28 @@ export default function sitemap() {
     priority: 0.7
   }));
 
+  const latestSecurityDate = getAllSecurityNotes()
+    .map((note) => new Date(note.updatedAt || note.publishedAt))
+    .sort((a, b) => b.getTime() - a.getTime())[0];
+
   const securityFolders = [
     {
       url: `${siteConfig.url}/notes/security/`,
+      ...(latestSecurityDate ? { lastModified: latestSecurityDate } : {}),
       changeFrequency: "weekly",
       priority: 0.85
     },
-    ...getAllSecurityFolders().map((folder) => ({
-      url: `${siteConfig.url}/notes/security/${folder.slug}/`,
-      changeFrequency: "weekly",
-      priority: 0.8
-    }))
+    ...getAllSecurityFolders().map((folder) => {
+      const folderLatest = folder.notes
+        .map((note) => new Date(note.updatedAt || note.publishedAt))
+        .sort((a, b) => b.getTime() - a.getTime())[0];
+      return {
+        url: `${siteConfig.url}/notes/security/${folder.slug}/`,
+        ...(folderLatest ? { lastModified: folderLatest } : {}),
+        changeFrequency: "weekly",
+        priority: 0.8
+      };
+    })
   ];
 
   const securityNotes = getAllSecurityNotes().map((note) => ({

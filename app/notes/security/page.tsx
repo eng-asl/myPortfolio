@@ -1,8 +1,9 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { JsonLd } from "@/components/JsonLd";
 import { getAllSecurityFolders } from "@/data/notes/security";
-import { createPageMetadata } from "@/lib/seo";
+import { createBreadcrumbJsonLd, createPageMetadata } from "@/lib/seo";
 import styles from "@/components/notes/SecurityNotes.module.css";
 
 export const metadata = createPageMetadata({
@@ -14,9 +15,15 @@ export const metadata = createPageMetadata({
 
 export default function SecurityNotesIndexPage() {
   const folders = getAllSecurityFolders();
+  const breadcrumb = createBreadcrumbJsonLd([
+    { name: "Home", pathname: "/" },
+    { name: "Notes", pathname: "/notes/" },
+    { name: "Security", pathname: "/notes/security/" }
+  ]);
 
   return (
     <div className="asl-page">
+      <JsonLd data={breadcrumb} />
       <div className={`shell ${styles.indexShell}`}>
         <nav className={styles.breadcrumbBar} aria-label="Breadcrumb">
           <Link href="/notes" className={styles.breadcrumbLink}>

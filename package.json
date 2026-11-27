@@ -23,8 +23,9 @@
     "test:gradify": "vitest run --config vitest.gradify.config.ts",
     "prepare:images": "node scripts/public-image-pipeline.mjs --write",
     "check:images": "node scripts/public-image-pipeline.mjs --check",
-    "predev": "npm run prepare:gradify && npm run prepare:images",
-    "prebuild": "npm run prepare:gradify && npm run prepare:images",
+    "generate:ai": "node scripts/generate-ai-artifacts.mjs",
+    "predev": "npm run prepare:gradify && npm run prepare:images && npm run generate:ai",
+    "prebuild": "npm run prepare:gradify && npm run prepare:images && npm run generate:ai",
     "postbuild": "node scripts/prepare-static-segments.mjs"
   },
   "dependencies": {

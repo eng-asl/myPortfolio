@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { profile } from "@/data/portfolio";
 import { absoluteUrl, siteConfig } from "@/lib/site";
 import { Post } from "@/types/content";
+import type { Project, Publication } from "@/types/portfolio";
+import type { SecurityNoteEntry } from "@/types/security-notes";
 import { PageMetadataOptions, JsonLdData } from "@/types/seo";
 
 export const personId: string = `${absoluteUrl("/")}#ahmed-asl`;
@@ -154,12 +156,28 @@ export function createProfilePageJsonLd(): JsonLdData {
   };
 }
 
+export function createBreadcrumbJsonLd(
+  items: Array<{ name: string; pathname: string }>
+): JsonLdData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.pathname.startsWith("http") ? item.pathname : absoluteUrl(item.pathname)
+    }))
+  };
+}
+
 export function createArticleJsonLd(post: Post): JsonLdData {
   const url = absoluteUrl(`/notes/${post.slug}/`);
+  const markdownUrl = absoluteUrl(`/notes/${post.slug}.md`);
 
   return {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
+    "@type": "TechArticle",
     "@id": `${url}#article`,
     url,
     mainEntityOfPage: url,
@@ -171,6 +189,11 @@ export function createArticleJsonLd(post: Post): JsonLdData {
     inLanguage: "en",
     articleSection: post.category,
     keywords: post.tags.join(", "),
+    encoding: {
+      "@type": "MediaObject",
+      encodingFormat: "text/markdown",
+      contentUrl: markdownUrl
+    },
     author: {
       "@type": "Person",
       "@id": personId,
@@ -183,5 +206,110 @@ export function createArticleJsonLd(post: Post): JsonLdData {
     isPartOf: {
       "@id": websiteId
     }
+  };
+}
+
+export function createTechArticleJsonLd(note: SecurityNoteEntry): JsonLdData {
+  const url = absoluteUrl(`/notes/security/${note.folderSlug}/${note.slug}/`);
+  const markdownUrl = absoluteUrl(`/notes/security/${note.folderSlug}/${note.slug}.md`);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "@id": `${url}#article`,
+    url,
+    mainEntityOfPage: url,
+    headline: note.title,
+    description: note.summary,
+    image: note.overviewSheetImage ? absoluteUrl(note.overviewSheetImage) : socialImage,
+    datePublished: note.publishedAt,
+    dateModified: note.updatedAt || note.publishedAt,
+    inLanguage: "en",
+    articleSection: `Security / ${note.folderTitle}`,
+    proficiencyLevel: note.difficulty,
+    keywords: note.tags.join(", "),
+    encoding: {
+      "@type": "MediaObject",
+      encodingFormat: "text/markdown",
+      contentUrl: markdownUrl
+    },
+    author: {
+      "@type": "Person",
+      "@id": personId,
+      name: profile.name,
+      url: absoluteUrl("/about/")
+    },
+    publisher: {
+      "@id": personId
+    },
+    isPartOf: {
+      "@id": websiteId
+    }
+  };
+}
+
+export function createProjectCreativeWorkJsonLd(
+  project: Project,
+  categorySlug: string
+): JsonLdData {
+  const url = absoluteUrl(`/work/${categorySlug}/${project.slug}/`);
+  const image =
+    project.image && !project.image.startsWith("http")
+      ? absoluteUrl(project.image)
+      : socialImage;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    "@id": `${url}#work`,
+    url,
+    mainEntityOfPage: url,
+    name: project.title,
+    description: project.description,
+    image,
+    inLanguage: "en",
+    genre: project.category,
+    keywords: project.tags.join(", "),
+    author: {
+      "@type": "Person",
+      "@id": personId,
+      name: profile.name,
+      url: absoluteUrl("/about/")
+    },
+    creator: {
+      "@id": personId
+    },
+    isPartOf: {
+      "@id": websiteId
+    }
+  };
+}
+
+export function createPublicationsJsonLd(publications: Publication[]): JsonLdData {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": `${absoluteUrl("/work/")}#publications`,
+    name: "Research publications by Ahmed Ibrahim Asl",
+    itemListElement: publications.map((pub, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "ScholarlyArticle",
+        name: pub.title,
+        url: pub.href,
+        datePublished: pub.year,
+        author: {
+          "@id": personId,
+          "@type": "Person",
+          name: profile.name,
+          url: absoluteUrl("/about/")
+        },
+        isPartOf: {
+          "@type": "PublicationIssue",
+          name: pub.venue
+        }
+      }
+    }))
   };
 }
