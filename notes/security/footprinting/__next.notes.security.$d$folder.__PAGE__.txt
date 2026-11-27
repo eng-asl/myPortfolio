@@ -1,0 +1,52 @@
+1:"$Sreact.fragment"
+2:I[22016,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js","/_next/static/chunks/2ufbqzbeyam3w.js"],""]
+3:I[5014,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js","/_next/static/chunks/2ufbqzbeyam3w.js"],"default"]
+4:I[97367,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"OutletBoundary"]
+5:"$Sreact.suspense"
+9:I[97367,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"ViewportBoundary"]
+a:I[97367,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"MetadataBoundary"]
+:HL["/_next/static/chunks/3ff7hjkk1fayo.css","style"]
+8:X
+26:X
+26:C
+0:{"buildId":"mOPVHpOGYiWA-PoXynGYk","data":[{"rsc":["$","$1","c",{"children":[["$","div",null,{"className":"asl-page","children":["$","div",null,{"className":"shell SecurityNotes-module__8ES6Xa__indexShell","children":[["$","nav",null,{"className":"SecurityNotes-module__8ES6Xa__breadcrumbBar","aria-label":"Breadcrumb","children":[["$","$L2",null,{"href":"/notes","className":"SecurityNotes-module__8ES6Xa__breadcrumbLink","children":"Notes"}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__breadcrumbSep","aria-hidden":"true","children":"/"}],["$","$L2",null,{"href":"/notes/security","className":"SecurityNotes-module__8ES6Xa__breadcrumbLink","children":"Security"}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__breadcrumbSep","aria-hidden":"true","children":"/"}],["$","span",null,{"className":"SecurityNotes-module__8ES6Xa__breadcrumbCurrent","children":"Footprinting"}]]}],["$","header",null,{"className":"SecurityNotes-module__8ES6Xa__indexHero","children":[["$","p",null,{"className":"SecurityNotes-module__8ES6Xa__shelfEyebrow","children":[["$","$L3",null,{"iconNode":[["path",{"d":"m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2","key":"usdka0"}]],"className":"lucide-folder-open","size":14,"aria-hidden":"true"}],["$","span",null,{"children":["SECURITY / ","PHASE 01"]}]]}],["$","h1",null,{"children":"Footprinting"}],["$","p",null,{"children":"Service and protocol reconnaissance notes covering banners, default ports, configuration hardening, anonymous access, and enumeration techniques."}]]}],["$","div",null,{"className":"SecurityNotes-module__8ES6Xa__noteGrid","children":[["$","article","ftp",{"className":"SecurityNotes-module__8ES6Xa__noteCard","children":[["$","div",null,{"className":"SecurityNotes-module__8ES6Xa__noteCardMeta","children":[["$","span",null,{"children":"TCP 21 (Control) / TCP 20 or PASV (Data)"}],["$","span",null,{"children":[7," SECTIONS / ",8," DIAGRAMS"]}]]}],["$","h2",null,{"children":["$","$L2",null,{"href":"/notes/security/footprinting/ftp","children":"FTP (File Transfer Protocol) & vsFTPd"}]}],["$","p",null,{"children":"Structured footprinting field notes covering FTP channels, Active vs Passive modes, vsFTPd configuration, access control, anonymous enumeration, and client diagnostics."}],["$","div",null,{"className":"SecurityNotes-module__8ES6Xa__noteCardFooter","children":[["$","div",null,{"className":"SecurityNotes-module__8ES6Xa__noteCardTags","children":[["$","span","Security",{"className":"SecurityNotes-module__8ES6Xa__noteCardTag","children":"Security"}],["$","span","Footprinting",{"className":"SecurityNotes-module__8ES6Xa__noteCardTag","children":"Footprinting"}],["$","span","FTP",{"className":"SecurityNotes-module__8ES6Xa__noteCardTag","children":"FTP"}],["$","span","vsFTPd",{"className":"SecurityNotes-module__8ES6Xa__noteCardTag","children":"vsFTPd"}]]}],["$","$L2",null,{"href":"/notes/security/footprinting/ftp","className":"SecurityNotes-module__8ES6Xa__noteCardCta","children":[["$","span",null,{"children":"Open Notes"}],["$","$L3",null,{"iconNode":[["path",{"d":"M7 7h10v10","key":"1tivn9"}],["path",{"d":"M7 17 17 7","key":"1vkiza"}]],"className":"lucide-arrow-up-right","size":15,"aria-hidden":"true"}]]}]]}]]}]]}]]}]}],[["$","link","0",{"rel":"stylesheet","href":"/_next/static/chunks/3ff7hjkk1fayo.css","precedence":"next"}],["$","script","script-0",{"src":"/_next/static/chunks/2ufbqzbeyam3w.js","async":true}]],["$","$L4",null,{"children":["$","$5",null,{"name":"Next.MetadataOutlet","children":"$@6"}]}]]}],"isPartial":"$@7","staleTime":"$8","varyParams":null},{"rsc":["$","$1","h",{"children":[null,["$","$L9",null,{"children":[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]}],["$","div",null,{"hidden":true,"children":["$","$La",null,{"children":["$","$5",null,{"name":"Next.Metadata","children":[["$","title","0",{"children":"Footprinting Security Notes"}],["$","meta","1",{"name":"description","content":"Service and protocol reconnaissance notes covering banners, default ports, configuration hardening, anonymous access, and enumeration techniques."}],["$","link","2",{"rel":"author","href":"https://eng-asl.com/about/"}],"$Lb","$Lc","$Ld","$Le","$Lf","$L10","$L11","$L12","$L13","$L14","$L15","$L16","$L17","$L18","$L19","$L1a","$L1b","$L1c","$L1d","$L1e","$L1f","$L20","$L21"]}]}]}],"$L22"]}],"isPartial":"$@23","staleTime":"$8","varyParams":null},{"rsc":"$L24","isPartial":"$@25","staleTime":"$8","varyParams":"$26"},{"rsc":"$L27","isPartial":"$@28","staleTime":"$8","varyParams":"$26"},{"rsc":"$L29","isPartial":"$@2a","staleTime":"$8","varyParams":"$26"}],"isUpgradeableISRFallback":false,"a":"$@2b","rootVaryParams":null,"needsRuntimeRequest":"$@2c"}
+2d:I[27201,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"IconMark"]
+2e:I[39756,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"default"]
+2f:I[37457,["/_next/static/chunks/3fntmmi971322.js","/_next/static/chunks/1h83g6f8xnkvf.js"],"default"]
+6:null
+b:["$","meta","3",{"name":"author","content":"Ahmed Ibrahim Asl"}]
+c:["$","meta","4",{"name":"keywords","content":"Ahmed Ibrahim Asl,Ahmed Asl,Ahmed Ibrahim Assal,Ahmed Assal,Ahmed Ibrahim Assl,Ahmed Assl,أحمد إبراهيم عسل,أحمد عسل,embedded systems engineer,IoT R&D engineer,engineering calculators"}]
+d:["$","meta","5",{"name":"creator","content":"Ahmed Ibrahim Asl"}]
+e:["$","meta","6",{"name":"robots","content":"index, follow"}]
+f:["$","meta","7",{"name":"googlebot","content":"index, follow, max-video-preview:-1, max-image-preview:large, max-snippet:-1"}]
+10:["$","meta","8",{"name":"category","content":"technology"}]
+11:["$","link","9",{"rel":"canonical","href":"https://eng-asl.com/notes/security/footprinting/"}]
+12:["$","meta","10",{"property":"og:title","content":"Footprinting Security Notes | Ahmed Asl"}]
+13:["$","meta","11",{"property":"og:description","content":"Service and protocol reconnaissance notes covering banners, default ports, configuration hardening, anonymous access, and enumeration techniques."}]
+14:["$","meta","12",{"property":"og:url","content":"https://eng-asl.com/notes/security/footprinting/"}]
+15:["$","meta","13",{"property":"og:site_name","content":"Ahmed Asl"}]
+16:["$","meta","14",{"property":"og:locale","content":"en_US"}]
+17:["$","meta","15",{"property":"og:image","content":"https://eng-asl.com/opengraph-image.png"}]
+18:["$","meta","16",{"property":"og:image:width","content":"1200"}]
+19:["$","meta","17",{"property":"og:image:height","content":"630"}]
+1a:["$","meta","18",{"property":"og:image:alt","content":"Ahmed Ibrahim Asl, Embedded Systems & IoT R&D Engineer"}]
+1b:["$","meta","19",{"property":"og:type","content":"website"}]
+1c:["$","meta","20",{"name":"twitter:card","content":"summary_large_image"}]
+1d:["$","meta","21",{"name":"twitter:title","content":"Footprinting Security Notes | Ahmed Asl"}]
+1e:["$","meta","22",{"name":"twitter:description","content":"Service and protocol reconnaissance notes covering banners, default ports, configuration hardening, anonymous access, and enumeration techniques."}]
+1f:["$","meta","23",{"name":"twitter:image","content":"https://eng-asl.com/twitter-image.png"}]
+20:["$","link","24",{"rel":"icon","href":"/icon.svg?icon.0yv64dno9_oy9.svg","sizes":"any","type":"image/svg+xml"}]
+21:["$","$L2d","25",{}]
+22:["$","meta",null,{"name":"next-size-adjust","content":""}]
+24:["$","$1","c",{"children":[null,["$","$L2e",null,{"parallelRouterKey":"children","template":["$","$L2f",null,{}]}]]}]
+27:["$","$1","c",{"children":[null,["$","$L2e",null,{"parallelRouterKey":"children","template":["$","$L2f",null,{}]}]]}]
+29:["$","$1","c",{"children":[null,["$","$L2e",null,{"parallelRouterKey":"children","template":["$","$L2f",null,{}]}]]}]
+2c:true
+8:300
+8:C
+2b:0
+23:"$undefined"
+25:"$undefined"
+28:"$undefined"
+2a:"$undefined"
+7:"$undefined"
