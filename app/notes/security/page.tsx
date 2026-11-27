@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowUpRight, FolderTree, Shield } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { getAllSecurityFolders } from "@/data/notes/security";
 import { createPageMetadata } from "@/lib/seo";
 import styles from "@/components/notes/SecurityNotes.module.css";
@@ -8,7 +8,7 @@ import styles from "@/components/notes/SecurityNotes.module.css";
 export const metadata = createPageMetadata({
   title: "Security Field Notes",
   description:
-    "Hierarchical cybersecurity notes organized by phase and protocol, starting with Footprinting and FTP (vsFTPd).",
+    "Structured cybersecurity notes organized by phase and protocol, starting with Footprinting and FTP (vsFTPd).",
   pathname: "/notes/security/"
 });
 
@@ -29,52 +29,45 @@ export default function SecurityNotesIndexPage() {
         </nav>
 
         <header className={styles.indexHero}>
-          <p className={styles.shelfEyebrow}>
-            <Shield size={14} aria-hidden="true" />
-            <span>SECURITY / DIRECTORY INDEX</span>
-          </p>
           <h1>Security Field Notes</h1>
           <p>
-            Structured notes grouped by assessment phase. Open a folder to browse protocol
-            architecture, server hardening, commands, and visual diagrams.
+            Technical notes organized by assessment phase, covering protocol architecture, server
+            configuration, enumeration commands, and verification techniques.
           </p>
         </header>
 
-        <div className={styles.shelfGrid}>
+        <div className={styles.indexList}>
           {folders.map((folder) => (
-            <article key={folder.slug} className={styles.shelfCard}>
-              <div className={styles.shelfCardTop}>
-                <span className={styles.shelfPhase}>{folder.phaseCode}</span>
-                <span className={styles.shelfCount}>
-                  {String(folder.notes.length).padStart(2, "0")}{" "}
-                  {folder.notes.length === 1 ? "PROTOCOL" : "PROTOCOLS"}
-                </span>
-              </div>
-
-              <div className={styles.shelfCardTitleRow}>
-                <FolderTree size={18} aria-hidden="true" className={styles.shelfIcon} />
+            <section key={folder.slug} className={styles.indexFolderBlock}>
+              <div className={styles.indexFolderHead}>
                 <h2>
                   <Link href={`/notes/security/${folder.slug}`}>{folder.title}</Link>
                 </h2>
+                <span className={styles.indexCount}>
+                  {folder.notes.length} {folder.notes.length === 1 ? "article" : "articles"}
+                </span>
               </div>
+              <p className={styles.indexFolderSummary}>{folder.summary}</p>
 
-              <p className={styles.shelfCardSummary}>{folder.summary}</p>
-
-              <ul className={styles.shelfNoteList}>
+              <ul className={styles.indexArticleList}>
                 {folder.notes.map((note) => (
-                  <li key={note.slug}>
+                  <li key={note.slug} className={styles.indexArticleItem}>
                     <Link
                       href={`/notes/security/${folder.slug}/${note.slug}`}
-                      className={styles.shelfNoteLink}
+                      className={styles.indexArticleLink}
                     >
-                      <span className={styles.shelfNoteBadge}>{note.slug.toUpperCase()}</span>
-                      <span className={styles.shelfNoteTitle}>{note.title}</span>
-                      <ArrowUpRight size={14} aria-hidden="true" />
+                      <div>
+                        <strong>{note.title}</strong>
+                        <span className={styles.indexArticleMeta}>
+                          {note.ports} / {note.readingTime} min read
+                        </span>
+                      </div>
+                      <ArrowUpRight size={15} aria-hidden="true" />
                     </Link>
                   </li>
                 ))}
               </ul>
-            </article>
+            </section>
           ))}
         </div>
       </div>

@@ -105,17 +105,11 @@ export function NoteTerminal({ terminal, compact = false }: NoteTerminalProps) {
       data-testid={`note-terminal-${terminal.id}`}
     >
       <div className={styles.terminalChrome}>
-        <div className={styles.terminalDots} aria-hidden="true">
-          <span className={styles.terminalDotRed} />
-          <span className={styles.terminalDotAmber} />
-          <span className={styles.terminalDotGreen} />
-        </div>
         <div className={styles.terminalTitleGroup}>
           <Terminal size={13} aria-hidden="true" />
           <span className={styles.terminalTitle}>{terminal.title}</span>
         </div>
         <div className={styles.terminalActions}>
-          <span className={styles.terminalEnv}>{terminal.environment}</span>
           <button
             type="button"
             className={styles.terminalCopyBtn}

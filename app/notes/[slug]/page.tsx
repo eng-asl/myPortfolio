@@ -61,95 +61,71 @@ export default async function ArticlePage({ params }: PageProps) {
       <JsonLd data={createArticleJsonLd(post)} />
 
       <header className="article-header shell">
-        <Link className="article-back" href="/notes">
-          <span aria-hidden="true">&larr;</span> All engineering notes
-        </Link>
-        <div className="article-title-grid">
-          <div>
-            <h1>{post.title}</h1>
-            <p className="article-summary">{post.summary}</p>
-          </div>
-          <dl className="article-facts">
-            <div>
-              <dt>Published</dt>
-              <dd>{formatDate(post.publishedAt)}</dd>
-            </div>
-            {wasUpdated ? (
-              <div>
-                <dt>Updated</dt>
-                <dd>{formatDate(post.updatedAt)}</dd>
-              </div>
-            ) : null}
-            <div>
-              <dt>Reading time</dt>
-              <dd>{post.readingTime} minutes</dd>
-            </div>
-            {post.difficulty ? (
-              <div>
-                <dt>Difficulty</dt>
-                <dd>{post.difficulty}</dd>
-              </div>
-            ) : null}
-            {post.part ? (
-              <div>
-                <dt>Series position</dt>
-                <dd>Part {post.part}</dd>
-              </div>
-            ) : null}
-          </dl>
-        </div>
-        <div className="tag-row article-tags">
-          {post.tags.map((tag) => (
-            <span className="tag" key={tag}>
-              {tag}
+        <div className="article-header-inner">
+          <Link className="article-back" href="/notes">
+            <span aria-hidden="true">&larr;</span> All engineering notes
+          </Link>
+          <h1>{post.title}</h1>
+          <p className="article-summary">{post.summary}</p>
+          <div className="article-meta-line mono">
+            <span>
+              By <Link href="/about">Ahmed Asl</Link>
             </span>
-          ))}
+            <span>Published {formatDate(post.publishedAt)}</span>
+            {wasUpdated ? <span>Updated {formatDate(post.updatedAt)}</span> : null}
+            <span>{post.readingTime} min read</span>
+            {post.difficulty ? <span>{post.difficulty}</span> : null}
+            {post.part ? <span>Part {post.part}</span> : null}
+          </div>
+          {post.tags.length ? (
+            <div className="tag-row article-tags">
+              {post.tags.map((tag) => (
+                <span className="tag" key={tag}>
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
       </header>
 
       <div className="article-layout shell">
-        <aside className="article-rail article-rail-left">
-          <p className="mono muted">
-            <Link href="/about">Ahmed Asl</Link>
-          </p>
-          <p>Embedded Systems &amp; IoT R&amp;D Engineer and teaching assistant in Egypt.</p>
-          <a href="#article-end">Jump to article end <span aria-hidden="true">&darr;</span></a>
-        </aside>
-
         <div
           className="article-body"
           dangerouslySetInnerHTML={{ __html: html }}
         />
 
-        <aside className="article-rail article-toc">
-          <p className="toc-title">On this page</p>
-          <ol>
-            {headings.map((heading) => (
-              <li className={`depth-${heading.depth}`} key={heading.id}>
-                <a href={`#${heading.id}`}>{heading.text}</a>
-              </li>
-            ))}
-          </ol>
-        </aside>
+        {headings.length ? (
+          <aside className="article-rail article-toc" aria-label="On this page">
+            <p className="toc-title">On this page</p>
+            <ol>
+              {headings.map((heading) => (
+                <li className={`depth-${heading.depth}`} key={heading.id}>
+                  <a href={`#${heading.id}`}>{heading.text}</a>
+                </li>
+              ))}
+            </ol>
+          </aside>
+        ) : null}
       </div>
 
       <footer id="article-end" className="article-footer shell">
-        <div>
-          <h2>Continue with another field note.</h2>
-        </div>
-        <div className="article-pagination">
-          {previous ? (
-            <Link href={`/notes/${previous.slug}`}>
-              <span>Previous</span>
-              <strong>{previous.title}</strong>
-            </Link>
-          ) : null}
-          {next ? (
-            <Link href={`/notes/${next.slug}`}>
-              <span>Next</span>
-              <strong>{next.title}</strong>
-            </Link>
-          ) : null}
+        <div className="article-footer-inner">
+          <h2>Continue reading</h2>
+          <div className="article-pagination">
+            {previous ? (
+              <Link href={`/notes/${previous.slug}`}>
+                <span>Previous</span>
+                <strong>{previous.title}</strong>
+              </Link>
+            ) : null}
+            {next ? (
+              <Link href={`/notes/${next.slug}`}>
+                <span>Next</span>
+                <strong>{next.title}</strong>
+              </Link>
+            ) : null}
+          </div>
         </div>
       </footer>
       <ArticleEnhancer />

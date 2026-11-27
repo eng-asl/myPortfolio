@@ -988,11 +988,13 @@ test(
           }
           if (articleBodyBackground) {
             if (
-              articleBodyBackground !== "rgb(18, 22, 28)" ||
+              (articleBodyBackground !== "rgb(18, 22, 28)" &&
+                articleBodyBackground !== "rgba(0, 0, 0, 0)") ||
               articleBodyShadow !== "none" ||
               !articleBodyFontFamily.includes("Archivo") ||
-              (articleHeadingBorderColor && articleHeadingBorderColor !== "rgb(217, 164, 65)") ||
-              (articleHeadingBorderColor && Math.abs(articleHeadingBorderWidth - 1) > 0.1) ||
+              (articleHeadingBorderWidth > 0 &&
+                (articleHeadingBorderColor !== "rgb(217, 164, 65)" ||
+                  Math.abs(articleHeadingBorderWidth - 1) > 0.1)) ||
               (articleHeadingMarkerDisplay !== "none" && articleHeadingMarkerContent !== "none")
             ) {
               failures.push(

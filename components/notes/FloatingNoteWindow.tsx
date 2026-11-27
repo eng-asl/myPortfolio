@@ -32,7 +32,9 @@ export function FloatingNoteWindow({
 }: FloatingNoteWindowProps) {
   const titleId = useId();
   const isOpen = Boolean(entry || diagramPreview);
-  const [activeTab, setActiveTab] = useState<FloatingInspectorTab>("overview");
+  const [activeTab, setActiveTab] = useState<FloatingInspectorTab>(
+    entry?.defaultTab ?? "overview"
+  );
 
   const { position, targetRef, handleRef, isDragging, handleProps } = useNoteDraggable({
     initialPosition,
@@ -40,8 +42,8 @@ export function FloatingNoteWindow({
   });
 
   useEffect(() => {
-    setActiveTab("overview");
-  }, [entry?.id, diagramPreview?.id]);
+    setActiveTab(entry?.defaultTab ?? "overview");
+  }, [entry?.id, entry?.defaultTab, diagramPreview?.id]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -316,6 +318,7 @@ export function FloatingNoteWindow({
 
         {activeTab === "terminal" && entry.terminal ? (
           <div className={styles.floatingPanel} role="tabpanel">
+            <p className={styles.floatingLead}>{entry.shortDefinition}</p>
             <NoteTerminal terminal={entry.terminal} compact />
           </div>
         ) : null}

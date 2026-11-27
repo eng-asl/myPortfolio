@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowUpRight, FolderTree, Shield } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import type { SecurityFolderEntry } from "@/types/security-notes";
 import styles from "./SecurityNotes.module.css";
 
@@ -9,8 +9,6 @@ interface SecurityFolderShelfProps {
 }
 
 export function SecurityFolderShelf({ folders }: SecurityFolderShelfProps) {
-  const totalNotes = folders.reduce((acc, folder) => acc + folder.notes.length, 0);
-
   return (
     <section
       className={`shell ${styles.shelfSection}`}
@@ -18,58 +16,50 @@ export function SecurityFolderShelf({ folders }: SecurityFolderShelfProps) {
     >
       <div className={styles.shelfHeader}>
         <div>
-          <p className={styles.shelfEyebrow}>
-            <Shield size={14} aria-hidden="true" />
-            <span>SECURITY / STRUCTURED FOLDERS</span>
-          </p>
           <h2 id="security-folders-title">Security Field Notes</h2>
           <p className={styles.shelfIntro}>
-            Organized by offensive and defensive phase. Each folder groups protocol summaries,
-            separated diagrams, and interactive configuration notes.
+            Structured reconnaissance and protocol hardening notes organized by assessment topic.
           </p>
         </div>
 
         <Link href="/notes/security" className={styles.shelfRootLink}>
-          <span>Open Security Index ({totalNotes})</span>
+          <span>View Security index</span>
           <ArrowUpRight size={15} aria-hidden="true" />
         </Link>
       </div>
 
-      <div className={styles.shelfGrid}>
+      <div className={styles.indexList}>
         {folders.map((folder) => (
-          <article key={folder.slug} className={styles.shelfCard}>
-            <div className={styles.shelfCardTop}>
-              <span className={styles.shelfPhase}>{folder.phaseCode}</span>
-              <span className={styles.shelfCount}>
-                {String(folder.notes.length).padStart(2, "0")}{" "}
-                {folder.notes.length === 1 ? "NOTE" : "NOTES"}
-              </span>
-            </div>
-
-            <div className={styles.shelfCardTitleRow}>
-              <FolderTree size={18} aria-hidden="true" className={styles.shelfIcon} />
+          <section key={folder.slug} className={styles.indexFolderBlock}>
+            <div className={styles.indexFolderHead}>
               <h3>
                 <Link href={`/notes/security/${folder.slug}`}>{folder.title}</Link>
               </h3>
+              <span className={styles.indexCount}>
+                {folder.notes.length} {folder.notes.length === 1 ? "note" : "notes"}
+              </span>
             </div>
+            <p className={styles.indexFolderSummary}>{folder.summary}</p>
 
-            <p className={styles.shelfCardSummary}>{folder.summary}</p>
-
-            <ul className={styles.shelfNoteList}>
+            <ul className={styles.indexArticleList}>
               {folder.notes.map((note) => (
-                <li key={note.slug}>
+                <li key={note.slug} className={styles.indexArticleItem}>
                   <Link
                     href={`/notes/security/${folder.slug}/${note.slug}`}
-                    className={styles.shelfNoteLink}
+                    className={styles.indexArticleLink}
                   >
-                    <span className={styles.shelfNoteBadge}>{note.slug.toUpperCase()}</span>
-                    <span className={styles.shelfNoteTitle}>{note.title}</span>
-                    <ArrowUpRight size={14} aria-hidden="true" />
+                    <div>
+                      <strong>{note.title}</strong>
+                      <span className={styles.indexArticleMeta}>
+                        {note.ports} / {note.readingTime} min read
+                      </span>
+                    </div>
+                    <ArrowUpRight size={15} aria-hidden="true" />
                   </Link>
                 </li>
               ))}
             </ul>
-          </article>
+          </section>
         ))}
       </div>
     </section>

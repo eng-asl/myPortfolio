@@ -24,7 +24,8 @@ export type DiagramPlaceholderKind =
   | "chroot-sandbox"
   | "protocol-security"
   | "anon-enum"
-  | "diagnostics";
+  | "diagnostics"
+  | "nmap-trace";
 
 export interface DiagramSlot {
   id: string;
@@ -54,6 +55,7 @@ export interface InspectorEntry {
   id: string;
   label: string;
   category: InspectorCategory;
+  defaultTab?: "overview" | "security" | "terminal" | "diagram";
   shortDefinition: string;
   details: string[];
   securityNote?: string;
@@ -103,11 +105,44 @@ export interface NoteSubSection {
   blocks: NoteContentBlock[];
 }
 
+export interface NoteContextLink {
+  label: string;
+  inspectorId?: string;
+  diagramId?: string;
+  href?: string;
+}
+
 export type NoteContentBlock =
   | {
       type: "paragraph";
       text: string;
       terms?: InlineTermRef[];
+    }
+  | {
+      type: "subheading";
+      id?: string;
+      text: string;
+      level?: 3 | 4;
+    }
+  | {
+      type: "bullets";
+      lead?: string;
+      items: string[];
+    }
+  | {
+      type: "code-sample";
+      lines: string[];
+      caption?: string;
+    }
+  | {
+      type: "diagram-embed";
+      diagramIds: string[];
+      layout?: "single" | "pair";
+      caption?: string;
+    }
+  | {
+      type: "context-links";
+      links: NoteContextLink[];
     }
   | {
       type: "callout";
@@ -162,7 +197,7 @@ export type NoteContentBlock =
 
 export interface NotePart {
   id: string;
-  indexLabel: string;
+  indexLabel?: string;
   shortTitle: string;
   title: string;
   intro: string;
@@ -200,7 +235,7 @@ export interface SecurityNoteEntry {
 export interface SecurityFolderEntry {
   slug: string;
   title: string;
-  phaseCode: string;
+  phaseCode?: string;
   summary: string;
   notes: SecurityNoteEntry[];
 }

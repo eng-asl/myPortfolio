@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpRight, FolderOpen } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { getAllSecurityFolders, getSecurityFolder } from "@/data/notes/security";
 import { createPageMetadata } from "@/lib/seo";
 import styles from "@/components/notes/SecurityNotes.module.css";
@@ -53,50 +53,29 @@ export default async function SecurityFolderPage({ params }: PageProps) {
         </nav>
 
         <header className={styles.indexHero}>
-          <p className={styles.shelfEyebrow}>
-            <FolderOpen size={14} aria-hidden="true" />
-            <span>SECURITY / {folder.phaseCode}</span>
-          </p>
           <h1>{folder.title}</h1>
           <p>{folder.summary}</p>
         </header>
 
-        <div className={styles.noteGrid}>
+        <ul className={styles.indexArticleList}>
           {folder.notes.map((note) => (
-            <article key={note.slug} className={styles.noteCard}>
-              <div className={styles.noteCardMeta}>
-                <span>{note.ports}</span>
-                <span>{note.parts.length} SECTIONS / {note.diagrams.length} DIAGRAMS</span>
-              </div>
-
-              <h2>
-                <Link href={`/notes/security/${folder.slug}/${note.slug}`}>
-                  {note.title}
-                </Link>
-              </h2>
-
-              <p>{note.summary}</p>
-
-              <div className={styles.noteCardFooter}>
-                <div className={styles.noteCardTags}>
-                  {note.tags.slice(0, 4).map((tag) => (
-                    <span key={tag} className={styles.noteCardTag}>
-                      {tag}
-                    </span>
-                  ))}
+            <li key={note.slug} className={styles.indexArticleItem}>
+              <Link
+                href={`/notes/security/${folder.slug}/${note.slug}`}
+                className={styles.indexArticleLink}
+              >
+                <div>
+                  <strong>{note.title}</strong>
+                  <p className={styles.indexArticleSummary}>{note.summary}</p>
+                  <span className={styles.indexArticleMeta}>
+                    {note.ports} / {note.readingTime} min read
+                  </span>
                 </div>
-
-                <Link
-                  href={`/notes/security/${folder.slug}/${note.slug}`}
-                  className={styles.noteCardCta}
-                >
-                  <span>Open Notes</span>
-                  <ArrowUpRight size={15} aria-hidden="true" />
-                </Link>
-              </div>
-            </article>
+                <ArrowUpRight size={16} aria-hidden="true" />
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       </div>
     </div>
   );

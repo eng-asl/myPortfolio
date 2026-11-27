@@ -21,7 +21,7 @@ test("hierarchical Security -> Footprinting -> FTP routes exist and configure st
   }
 });
 
-test("security note data and components contain zero em dashes or en dashes", () => {
+test("security note data, shared article pages, and components contain zero em dashes or en dashes", () => {
   const filesToCheck = [
     "types/security-notes.ts",
     "data/notes/security/index.ts",
@@ -29,6 +29,8 @@ test("security note data and components contain zero em dashes or en dashes", ()
     "app/notes/security/page.tsx",
     "app/notes/security/[folder]/page.tsx",
     "app/notes/security/[folder]/[slug]/page.tsx",
+    "app/notes/[slug]/page.tsx",
+    "app/writing/[slug]/page.tsx",
     ...readdirSync("components/notes").map((name) => join("components/notes", name))
   ];
 
@@ -39,7 +41,7 @@ test("security note data and components contain zero em dashes or en dashes", ()
   }
 });
 
-test("FTP field notes preserve all parts, directives, codes, diagnostics, and avoid duplicate prompt noise", () => {
+test("FTP field notes preserve core explanations and include all extended technical sections", () => {
   const ftpSource = read("data/notes/security/footprinting/ftp.ts");
 
   for (const partId of [
@@ -49,7 +51,11 @@ test("FTP field notes preserve all parts, directives, codes, diagnostics, and av
     'id: "users"',
     'id: "anonymous"',
     'id: "enumeration"',
-    'id: "diagnostics"'
+    'id: "diagnostics"',
+    'id: "recursive-listing"',
+    'id: "file-transfers"',
+    'id: "nmap-footprinting"',
+    'id: "manual-and-tls"'
   ]) {
     assert.ok(ftpSource.includes(partId), `missing section ${partId}`);
   }
@@ -62,6 +68,8 @@ test("FTP field notes preserve all parts, directives, codes, diagnostics, and av
     "local_enable=YES",
     "pam_service_name=vsftpd",
     "secure_chroot_dir=/var/run/vsftpd/empty",
+    "Pluggable Authentication Modules",
+    "/etc/pam.d/vsftpd",
     "dirmessage_enable=YES",
     "message_file=.message",
     "ftpd_banner=Welcome to FTP Server",
@@ -87,7 +95,30 @@ test("FTP field notes preserve all parts, directives, codes, diagnostics, and av
     "quote STAT",
     "debug",
     "trace",
-    "client-side visibility"
+    "client-side visibility",
+    "chown_uploads=YES",
+    "chown_username=username",
+    "chroot_local_user=YES",
+    "chroot_list_enable=YES",
+    "/etc/vsftpd.chroot_list",
+    "hide_ids=YES",
+    "ls_recurse_enable=YES",
+    "Fail2ban",
+    "ls -R",
+    "wget -m --no-passive ftp://anonymous:anonymous@10.129.14.136",
+    "STOR testupload.txt",
+    "Local File Inclusion (LFI)",
+    "Remote Code Execution (RCE)",
+    "ftp-vsftpd-backdoor",
+    "ftp-vuln-cve2010-4221",
+    "sudo nmap -sV -p21 -sC -A 10.129.14.136",
+    "--script-trace",
+    "54228",
+    "nc -nv 10.129.14.136 21",
+    "telnet 10.129.14.136 21",
+    "openssl s_client -connect 10.129.14.136:21 -starttls ftp",
+    "master.inlanefreight.htb",
+    "https://nmap.org/book/nse.html"
   ];
 
   for (const token of requiredTokens) {
@@ -123,15 +154,19 @@ test("FloatingNoteWindow is non-modal, draggable, and closes on Escape", () => {
   assert.match(source, /key === "Escape"/);
 });
 
-test("NoteTerminal renders copy controls and FTP status codes, and workspace provides 3 layout modes", () => {
+test("NoteTerminal renders copy controls and FTP status codes, and workspace uses continuous vertical article layout", () => {
   const terminal = read("components/notes/NoteTerminal.tsx");
   assert.match(terminal, /clipboard\.writeText/);
   assert.match(terminal, /termStatusCode/);
 
   const workspace = read("components/notes/SecurityNoteWorkspace.tsx");
-  assert.match(workspace, /layout-mode-split/);
-  assert.match(workspace, /layout-mode-stack/);
-  assert.match(workspace, /layout-mode-board/);
+  assert.doesNotMatch(workspace, /layout-mode-split|layout-mode-board|quickFactsStrip|heroCard/);
+  assert.match(workspace, /vertical-note-article/);
+  assert.match(workspace, /article-jump-nav/);
+  assert.match(workspace, /open-full-sheet-btn/);
+  assert.match(workspace, /toggle-quick-ref-btn/);
+  assert.match(workspace, /case "diagram-embed"/);
+  assert.match(workspace, /case "context-links"/);
 });
 
 test("markdown loaders normalize CRLF line endings and index pages strip post bodies from client props", () => {

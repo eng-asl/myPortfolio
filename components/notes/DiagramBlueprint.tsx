@@ -351,6 +351,85 @@ export function DiagramBlueprint({ kind, alt }: DiagramBlueprintProps) {
     );
   }
 
+  if (kind === "nmap-trace") {
+    return (
+      <svg
+        viewBox="0 0 640 270"
+        className={styles.blueprintSvg}
+        role="img"
+        aria-label={alt}
+      >
+        <defs>
+          <pattern id="bp-grid-nmap" width="24" height="24" patternUnits="userSpaceOnUse">
+            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="#1c2129" strokeWidth="1" />
+          </pattern>
+        </defs>
+        <rect x="0" y="0" width="640" height="270" rx="6" fill="#0B0D11" />
+        <rect x="0" y="0" width="640" height="270" rx="6" fill="url(#bp-grid-nmap)" />
+
+        <text x="24" y="32" fill="#D9A441" fontSize="11.5" fontFamily="var(--asl-mono), monospace">
+          NMAP NSE SCRIPT TRACE OVER TCP 21
+        </text>
+
+        <rect x="24" y="54" width="184" height="178" rx="6" fill="#12161C" stroke="#6E8BA8" />
+        <text x="116" y="82" textAnchor="middle" fill="#F4F5F7" fontSize="15" fontWeight="700" fontFamily="var(--asl-font), sans-serif">
+          Nmap Scanner
+        </text>
+        <text x="116" y="103" textAnchor="middle" fill="#929CAB" fontSize="12" fontFamily="var(--asl-mono), monospace">
+          10.10.14.4
+        </text>
+        <rect x="42" y="124" width="148" height="36" rx="4" fill="#1C2129" stroke="#39424F" />
+        <text x="116" y="146" textAnchor="middle" fill="#E8BC66" fontSize="12" fontFamily="var(--asl-mono), monospace">
+          src :54228 (ftp-anon)
+        </text>
+        <rect x="42" y="174" width="148" height="36" rx="4" fill="#1C2129" stroke="#39424F" />
+        <text x="116" y="196" textAnchor="middle" fill="#9CB8D4" fontSize="12" fontFamily="var(--asl-mono), monospace">
+          src :54230 (ftp-syst)
+        </text>
+
+        <rect x="432" y="54" width="184" height="178" rx="6" fill="#12161C" stroke="#5FA37A" />
+        <text x="524" y="82" textAnchor="middle" fill="#F4F5F7" fontSize="15" fontWeight="700" fontFamily="var(--asl-font), sans-serif">
+          Target FTP Server
+        </text>
+        <text x="524" y="103" textAnchor="middle" fill="#929CAB" fontSize="12" fontFamily="var(--asl-mono), monospace">
+          10.129.14.136:21
+        </text>
+        <rect x="450" y="124" width="148" height="86" rx="4" fill="#0E1B16" stroke="#5FA37A" strokeWidth="1.2" />
+        <text x="524" y="150" textAnchor="middle" fill="#7CC497" fontSize="12.5" fontWeight="700" fontFamily="var(--asl-mono), monospace">
+          vsFTPd (TCP 21)
+        </text>
+        <text x="524" y="174" textAnchor="middle" fill="#E6E8EB" fontSize="11.5" fontFamily="var(--asl-mono), monospace">
+          220 Welcome banner
+        </text>
+        <text x="524" y="194" textAnchor="middle" fill="#E6E8EB" fontSize="11.5" fontFamily="var(--asl-mono), monospace">
+          230 / 211 / 215 replies
+        </text>
+
+        <line x1="212" y1="136" x2="424" y2="136" stroke="#D9A441" strokeWidth="1.8" />
+        <polyline points="416,130 426,136 416,142" fill="none" stroke="#D9A441" strokeWidth="1.8" />
+        <text x="320" y="127" textAnchor="middle" fill="#E8BC66" fontSize="11" fontFamily="var(--asl-mono), monospace">
+          CONNECT &amp; USER anonymous
+        </text>
+
+        <line x1="426" y1="158" x2="214" y2="158" stroke="#5FA37A" strokeWidth="1.8" />
+        <polyline points="222,152 212,158 222,164" fill="none" stroke="#5FA37A" strokeWidth="1.8" />
+        <text x="320" y="175" textAnchor="middle" fill="#7CC497" fontSize="11" fontFamily="var(--asl-mono), monospace">
+          220 Welcome ... / 230 OK
+        </text>
+
+        <line x1="212" y1="196" x2="424" y2="196" stroke="#6E8BA8" strokeWidth="1.8" strokeDasharray="5 4" />
+        <polyline points="416,190 426,196 416,202" fill="none" stroke="#6E8BA8" strokeWidth="1.8" />
+        <text x="320" y="214" textAnchor="middle" fill="#9CB8D4" fontSize="11" fontFamily="var(--asl-mono), monospace">
+          Separate socket for SYST / STAT
+        </text>
+
+        <text x="24" y="254" fill="#B4BBC5" fontSize="12" fontFamily="var(--asl-font), sans-serif">
+          Each NSE script may open its own ephemeral local port toward target port 21.
+        </text>
+      </svg>
+    );
+  }
+
   return (
     <svg
       viewBox="0 0 640 280"
