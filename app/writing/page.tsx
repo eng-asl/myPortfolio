@@ -1,11 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { WritingIndex } from "@/components/WritingIndex";
-import { SecurityFolderShelf } from "@/components/notes/SecurityFolderShelf";
-import {
-  getAllSecurityFolders,
-  getSecurityNotesAsPostSummaries
-} from "@/data/notes/security";
+import { getSecurityNotesAsPostSummaries } from "@/data/notes/security";
 import { getAllPosts, toPostSummary } from "@/lib/content";
 import { createPageMetadata } from "@/lib/seo";
 
@@ -18,7 +14,6 @@ export const metadata = createPageMetadata({
 
 export default function WritingPage() {
   const allPosts = getAllPosts().map(toPostSummary);
-  const securityFolders = getAllSecurityFolders();
   const securityPosts = getSecurityNotesAsPostSummaries();
   const posts = [...securityPosts, ...allPosts];
 
@@ -32,8 +27,6 @@ export default function WritingPage() {
           behind embedded systems, Linux, cybersecurity, Flutter, and AI work.
         </p>
       </section>
-
-      <SecurityFolderShelf folders={securityFolders} />
 
       <section className="shell notes-resource-rail" aria-label="Reference collections">
         <Link href="/notes/library">
