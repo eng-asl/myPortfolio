@@ -1,0 +1,52 @@
+name: Notify IndexNow after Pages deployment
+
+on:
+  workflow_run:
+    workflows: ["pages-build-deployment"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: "Optional comma-separated canonical URLs to submit"
+        required: false
+        type: string
+      dry_run:
+        description: "Preview changed URLs without posting to IndexNow"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow-notify
+  cancel-in-progress: false
+
+jobs:
+  notify-indexnow:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Notify IndexNow of changed canonical URLs
+        env:
+          INPUT_URLS: ${{ inputs.urls || '' }}
+          INPUT_DRY_RUN: ${{ inputs.dry_run && 'true' || 'false' }}
+        run: |
+          args=(--mode pages-branch --base-ref HEAD~1 --head-ref HEAD)
+          if [ -n "$INPUT_URLS" ]; then
+            args=(--urls "$INPUT_URLS")
+          fi
+          if [ "$INPUT_DRY_RUN" = "true" ]; then
+            args+=(--dry-run)
+          fi
+          node .github/scripts/indexnow-notify.mjs "${args[@]}"

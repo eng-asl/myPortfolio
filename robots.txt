@@ -1,5 +1,13 @@
 User-Agent: Googlebot
 User-Agent: Bingbot
+User-Agent: Applebot
+User-Agent: DuckDuckBot
+User-Agent: Yandex
+Allow: /
+Disallow: /api/
+Disallow: /work/ui-preview/
+Disallow: /concepts/
+
 User-Agent: OAI-SearchBot
 User-Agent: ChatGPT-User
 User-Agent: Claude-SearchBot
@@ -10,6 +18,14 @@ Allow: /
 Disallow: /api/
 Disallow: /work/ui-preview/
 Disallow: /concepts/
+
+User-Agent: GPTBot
+User-Agent: ClaudeBot
+User-Agent: Applebot-Extended
+User-Agent: CCBot
+User-Agent: Bytespider
+User-Agent: Meta-ExternalAgent
+Disallow: /
 
 User-Agent: *
 Allow: /
