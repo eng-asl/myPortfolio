@@ -225,13 +225,15 @@ export const ftpNote: SecurityNoteEntry = {
       id: "how-ftp-works",
       shortTitle: "How FTP Works",
       title: "How FTP Works",
+      takeaway:
+        "FTP separates session commands (TCP 21) and payload transfers (TCP 20 or PASV) into two independent TCP connections.",
       intro:
         "FTP (File Transfer Protocol) is an application-layer protocol in the TCP/IP stack (alongside HTTP and POP) used to transfer files between a client and a server over TCP.",
       diagramIds: ["ftp-two-channels"],
       blocks: [
         {
           type: "paragraph",
-          text: "Unlike single-connection protocols, FTP separates commands and file transfers across two distinct TCP connections."
+          text: "**Dual-connection architecture:** Unlike single-socket protocols, FTP keeps commands and file bytes on separate TCP streams."
         },
         {
           type: "comparison-table",
@@ -303,8 +305,10 @@ export const ftpNote: SecurityNoteEntry = {
       id: "active-and-passive-ftp",
       shortTitle: "Active & Passive FTP",
       title: "Active and Passive FTP",
+      takeaway:
+        "The client always opens Control (TCP 21), while Active mode connects back from the server and Passive mode connects outbound from the client.",
       intro:
-        "FTP supports two modes for establishing the Data Connection. In both modes, the client initiates the Control Connection.",
+        "FTP supports two modes for establishing the Data Connection.",
       diagramIds: ["ftp-active-mode", "ftp-passive-mode"],
       blocks: [
         {
@@ -367,13 +371,15 @@ export const ftpNote: SecurityNoteEntry = {
       id: "vsftpd",
       shortTitle: "vsFTPd",
       title: "vsFTPd",
+      takeaway:
+        "vsFTPd implements RFC 959 FTP on Linux hosts and reads runtime behavior from `/etc/vsftpd.conf`.",
       intro:
         "vsFTPd (Very Secure FTP Daemon) is a commonly used Linux FTP server. FTP defines the communication protocol, while vsFTPd implements it on the host.",
       diagramIds: ["ftp-quick-facts"],
       blocks: [
         {
           type: "paragraph",
-          text: "A daemon is a program that provides a background service. The default configuration file is `/etc/vsftpd.conf`."
+          text: "**Daemon vs. protocol:** A daemon is a background host service; its default directives live in `/etc/vsftpd.conf`."
         },
         {
           type: "context-links",
@@ -391,165 +397,106 @@ export const ftpNote: SecurityNoteEntry = {
       id: "vsftpd-configuration",
       shortTitle: "vsFTPd Configuration",
       title: "vsFTPd Configuration Settings",
+      takeaway:
+        "Audit listeners, PAM/anonymous auth, chroot isolation, owner masking, and TLS encryption first; use the directives reference for banners and logging.",
       intro:
-        "Directives in `/etc/vsftpd.conf` govern network listeners, authentication, filesystem isolation, listings, banners, logging, and TLS.",
+        "Core directives in `/etc/vsftpd.conf` govern how vsFTPd listens, authenticates accounts, isolates processes, exposes directory metadata, and negotiates TLS.",
       diagramIds: ["ftp-chroot-sandbox", "ftp-protocol-security"],
       blocks: [
         {
           type: "subheading",
-          id: "network-and-connection-settings",
-          text: "Network and Connection Settings",
+          id: "core-vsftpd-directives",
+          text: "Core Security and Listener Directives",
           level: 3
         },
         {
           type: "settings-table",
-          id: "tbl-network-settings",
+          id: "tbl-core-vsftpd-settings",
           rows: [
             {
               setting: "listen=NO",
               summary:
-                "Controls standalone IPv4 operation. When YES, vsFTPd listens independently. When both listen and listen_ipv6 are NO, a superserver such as inetd can start vsFTPd when a connection is requested."
+                "Disables standalone IPv4 daemon mode; when both `listen` and `listen_ipv6` are NO, an inetd superserver launches vsFTPd on demand."
             },
             {
               setting: "listen_ipv6=YES",
               summary:
-                "Enables independent listening on an IPv6 socket, which may also accept IPv4 connections depending on system configuration."
+                "Enables standalone listening on an IPv6 socket (may also accept IPv4 traffic depending on OS dual-stack settings)."
             },
             {
               setting: "connect_from_port_20=YES",
               summary:
-                "Configures vsFTPd to use server TCP port 20 as the source port for Active FTP Data Connections."
-            }
-          ]
-        },
-        {
-          type: "paragraph",
-          text: "On-demand operation saves memory when FTP is rarely used. It does not hide the FTP service from port scanning because another service such as `inetd` still listens on port 21."
-        },
-        {
-          type: "context-links",
-          links: [
-            {
-              label: "Inspect Service Startup",
-              actionKind: "inspect",
-              inspectorId: "service-startup"
-            }
-          ]
-        },
-        {
-          type: "subheading",
-          id: "authentication-and-access-control",
-          text: "Authentication and Access Control",
-          level: 3
-        },
-        {
-          type: "settings-table",
-          id: "tbl-auth-settings",
-          rows: [
+                "Requests source TCP port 20 for Active FTP Data Connections."
+            },
             {
               setting: "anonymous_enable=NO",
               summary: "Disables anonymous login."
             },
             {
               setting: "local_enable=YES",
-              summary: "Allows existing Linux system accounts to authenticate to FTP."
+              summary: "Allows local Linux system accounts to authenticate."
             },
             {
               setting: "pam_service_name=vsftpd",
               summary:
-                "Selects the PAM authentication configuration, normally at /etc/pam.d/vsftpd. PAM is also used by SSH and sudo."
+                "Selects `/etc/pam.d/vsftpd` for PAM checks (shared mechanism with SSH and sudo)."
             },
             {
               setting: "secure_chroot_dir=/var/run/vsftpd/empty",
               summary:
-                "Defines an empty, restricted directory used to isolate pre-authentication vsFTPd processes from system files."
+                "Empty directory used to isolate pre-authentication vsFTPd command workers under the Principle of Least Privilege; never used for user file shares."
+            },
+            {
+              setting: "chroot_local_user=YES",
+              summary: "Confines local authenticated FTP users inside their home directory."
+            },
+            {
+              setting: "chroot_list_enable=YES",
+              summary:
+                "Activates `/etc/vsftpd.chroot_list` (acts as an allow-browse exception list when `chroot_local_user=YES`, or a confined list when NO)."
+            },
+            {
+              setting: "hide_ids=YES",
+              summary:
+                "Replaces owner and group names in protocol `LIST` output with `ftp` without altering real disk permissions."
+            },
+            {
+              setting: "ls_recurse_enable=YES",
+              summary: "Permits recursive `LIST -R` directory enumeration."
+            },
+            {
+              setting: "ssl_enable=NO",
+              summary: "Disables FTPS support; set to YES to allow TLS."
             }
           ]
         },
         {
           type: "paragraph",
-          text: "Before authentication, the process handling incoming FTP commands does not require direct access to sensitive system files. vsFTPd isolates this process inside `secure_chroot_dir` under the Principle of Least Privilege; this is not the directory used for sharing, uploading, or downloading files."
+          text: "**On-demand listening caveat:** Using `inetd` saves RAM when FTP is rarely used, yet **does not hide TCP port 21 from port scanners** because the superserver keeps port 21 open. Also note that **confinement (`/etc/vsftpd.chroot_list`)** applies after login, whereas `secure_chroot_dir` isolates pre-auth workers."
         },
         {
           type: "context-links",
           links: [
+            {
+              label: "Open Additional Directives Reference (Banners, Uploads & Logging)",
+              actionKind: "reference",
+              inspectorId: "vsftpd-directives-reference"
+            },
+            {
+              label: "Inspect Service Startup",
+              actionKind: "inspect",
+              inspectorId: "service-startup"
+            },
             {
               label: "Inspect Process Isolation",
               actionKind: "inspect",
               inspectorId: "process-isolation"
-            }
-          ]
-        },
-        {
-          type: "subheading",
-          id: "ownership-and-user-restrictions",
-          text: "Ownership and User Restrictions",
-          level: 3
-        },
-        {
-          type: "settings-table",
-          id: "tbl-ownership-settings",
-          rows: [
-            {
-              setting: "chown_uploads=YES",
-              summary: "Changes the ownership of anonymously uploaded files."
             },
-            {
-              setting: "chown_username=username",
-              summary: "Specifies the Linux account receiving ownership."
-            },
-            {
-              setting: "chroot_local_user=YES",
-              summary: "Restricts local FTP users to their configured root directory."
-            },
-            {
-              setting: "chroot_list_enable=YES",
-              summary: "Enables `/etc/vsftpd.chroot_list`, whose behavior depends on `chroot_local_user`."
-            }
-          ]
-        },
-        {
-          type: "paragraph",
-          text: "Authenticated user confinement applies to `/etc/vsftpd.chroot_list`, which is distinct from pre-login `secure_chroot_dir` isolation."
-        },
-        {
-          type: "context-links",
-          links: [
             {
               label: "Inspect Chroot Rules",
               actionKind: "inspect",
               inspectorId: "chroot-rules"
-            }
-          ]
-        },
-        {
-          type: "subheading",
-          id: "information-disclosure-and-directory-listing",
-          text: "Information Disclosure and Directory Listing",
-          level: 3
-        },
-        {
-          type: "settings-table",
-          id: "tbl-disclosure-settings",
-          rows: [
-            {
-              setting: "hide_ids=YES",
-              summary:
-                "Displays file owners and groups as ftp instead of real UIDs or usernames."
             },
-            {
-              setting: "ls_recurse_enable=YES",
-              summary: "Enables recursive directory listings using LIST -R."
-            }
-          ]
-        },
-        {
-          type: "paragraph",
-          text: "Enabling `hide_ids` alters displayed ownership fields in FTP protocol listings without changing actual file ownership or Linux permissions."
-        },
-        {
-          type: "context-links",
-          links: [
             {
               label: "Compare Directory Listings",
               actionKind: "view-example",
@@ -559,67 +506,13 @@ export const ftpNote: SecurityNoteEntry = {
         },
         {
           type: "subheading",
-          id: "messages-time-and-logging",
-          text: "Messages, Time and Logging",
-          level: 3
-        },
-        {
-          type: "settings-table",
-          id: "tbl-messages-settings",
-          rows: [
-            {
-              setting: "dirmessage_enable=YES",
-              summary: "Displays a message when a user enters a configured directory."
-            },
-            {
-              setting: "message_file=.message",
-              summary: "Defines the file containing the directory entry notice."
-            },
-            {
-              setting: "ftpd_banner=Welcome to FTP Server",
-              summary: "Defines the 220 welcome greeting directly inside vsftpd.conf."
-            },
-            {
-              setting: "banner_file=/etc/ftp_banner.txt",
-              summary: "Loads the welcome greeting from a file and overrides ftpd_banner."
-            },
-            {
-              setting: "use_localtime=YES",
-              summary: "Displays directory timestamps using server local time rather than GMT."
-            },
-            {
-              setting: "xferlog_enable=YES",
-              summary: "Logs file uploads and downloads for auditing."
-            }
-          ]
-        },
-        {
-          type: "subheading",
           id: "encryption-and-security",
-          text: "Encryption and Security",
+          text: "Encryption and Transport Protocols",
           level: 3
-        },
-        {
-          type: "settings-table",
-          id: "tbl-encryption-settings",
-          rows: [
-            {
-              setting: "ssl_enable=NO",
-              summary: "Disables TLS support. Set to YES to allow FTPS connections."
-            },
-            {
-              setting: "rsa_cert_file",
-              summary: "Path to the server X.509 TLS certificate."
-            },
-            {
-              setting: "rsa_private_key_file",
-              summary: "Path to the private key paired with the certificate."
-            }
-          ]
         },
         {
           type: "paragraph",
-          text: "Standard FTP transfers credentials and file contents in plain text. Enabling TLS support (`ssl_enable=YES`) and enforcing encrypted logins or data transfers are separate configuration concerns."
+          text: "**Cleartext default:** Standard FTP transmits usernames, passwords, and files unencrypted. **Enabling TLS (`ssl_enable=YES`) and enforcing encryption for logins/data are separate configuration concerns.**"
         },
         {
           type: "comparison-table",
@@ -627,15 +520,15 @@ export const ftpNote: SecurityNoteEntry = {
           columns: ["Protocol", "Security"],
           rows: [
             { cells: ["FTP", "Plain text."] },
-            { cells: ["FTPS", "FTP with TLS encryption."] },
-            { cells: ["SFTP", "File transfers over SSH using a separate protocol."] }
+            { cells: ["FTPS", "FTP wrapped in TLS encryption."] },
+            { cells: ["SFTP", "Separate file-transfer subsystem running over SSH."] }
           ]
         },
         {
           type: "context-links",
           links: [
             {
-              label: "Inspect Transport Security",
+              label: "Inspect TLS Enforcement & Key Paths",
               actionKind: "inspect",
               inspectorId: "transport-security"
             }
@@ -647,6 +540,8 @@ export const ftpNote: SecurityNoteEntry = {
       id: "ftp-users",
       shortTitle: "FTP Users",
       title: "FTP Users and Access Control",
+      takeaway:
+        "Accounts listed in `/etc/ftpusers` are rejected at login when PAM enforces the denylist.",
       intro:
         "The `/etc/ftpusers` file lists usernames that are denied FTP access when the authentication policy enforces this denylist.",
       diagramIds: [],
@@ -663,7 +558,7 @@ export const ftpNote: SecurityNoteEntry = {
         },
         {
           type: "paragraph",
-          text: "Enforcing this list helps prevent sensitive or privileged Linux accounts from authenticating over FTP unnecessarily."
+          text: "**Attack surface reduction:** Denylisting `root` and service accounts stops privileged Linux logins from authenticating over FTP."
         },
         {
           type: "context-links",
@@ -681,6 +576,8 @@ export const ftpNote: SecurityNoteEntry = {
       id: "anonymous-access",
       shortTitle: "Anonymous Access",
       title: "Dangerous Settings and Anonymous Access",
+      takeaway:
+        "`anonymous_enable=YES` lets anyone inspect exposed files, while upload flags plus writable directories open write abuse.",
       intro:
         "Anonymous FTP permits access without a personal user account. It can support internal distribution, yet permissive settings risk exposing files or allowing unauthorized writes.",
       diagramIds: [],
@@ -714,7 +611,7 @@ export const ftpNote: SecurityNoteEntry = {
         },
         {
           type: "paragraph",
-          text: "Anonymous access risks include unauthorized reads, filename disclosure, and unintended file uploads or disk consumption; anonymous writes require both `write_enable=YES` and matching Linux filesystem write permissions."
+          text: "**Dual permission requirement:** Anonymous writes succeed only when both `write_enable=YES` (plus upload flags) and matching Linux filesystem write permissions are present."
         },
         {
           type: "context-links",
@@ -732,6 +629,8 @@ export const ftpNote: SecurityNoteEntry = {
       id: "anonymous-enumeration",
       shortTitle: "Anonymous Enumeration",
       title: "Anonymous Login and Server Enumeration",
+      takeaway:
+        "Log in as `anonymous` on TCP 21 to inspect the 220 banner, test 230 access, and list exposed directories.",
       intro:
         "Connecting to port 21 reveals the server welcome banner, authentication policy, and exposed directory listings. Use `anonymous` in authorized tests (lab host `10.129.14.136`).",
       diagramIds: ["ftp-anon-enum"],
@@ -752,7 +651,7 @@ export const ftpNote: SecurityNoteEntry = {
         },
         {
           type: "paragraph",
-          text: "Folder and file names often reveal internal workflows or account hints even when downloading individual files is restricted."
+          text: "**Metadata intelligence:** Folder and file names often reveal internal workflows or valid account hints even when file downloads are blocked."
         },
         {
           type: "context-links",
@@ -788,6 +687,8 @@ export const ftpNote: SecurityNoteEntry = {
       id: "debugging-ftp",
       shortTitle: "Debugging FTP",
       title: "Debugging FTP Communication",
+      takeaway:
+        "`status`, `debug`, and `trace` inspect local client behavior, whereas `quote STAT` queries remote server status.",
       intro:
         "FTP clients provide diagnostic commands to inspect local client settings and raw protocol exchanges.",
       diagramIds: ["ftp-diagnostics"],
@@ -805,7 +706,7 @@ export const ftpNote: SecurityNoteEntry = {
         },
         {
           type: "paragraph",
-          text: "The `status` command inspects the local client, whereas `quote STAT` sends a protocol query to the remote server."
+          text: "**Client vs. server scope:** `status` reads only local client state, whereas `quote STAT` queries the server for live session limits and version details."
         },
         {
           type: "context-links",
@@ -823,6 +724,8 @@ export const ftpNote: SecurityNoteEntry = {
       id: "recursive-listing",
       shortTitle: "Recursive Listing",
       title: "Recursive Directory Listing",
+      takeaway:
+        "Run `ls -R` when `ls_recurse_enable=YES` is active to enumerate nested folders in one pass.",
       intro:
         "When `ls_recurse_enable=YES` is active on the server, the client can enumerate accessible subdirectories recursively.",
       diagramIds: [],
@@ -839,7 +742,7 @@ export const ftpNote: SecurityNoteEntry = {
         },
         {
           type: "paragraph",
-          text: "This maps nested accessible folders without changing directories manually."
+          text: "**Single-command mapping:** Traverses nested subdirectories automatically without manual `cd` navigation."
         },
         {
           type: "context-links",
@@ -857,6 +760,8 @@ export const ftpNote: SecurityNoteEntry = {
       id: "file-transfers",
       shortTitle: "File Transfers",
       title: "Downloading and Uploading Files",
+      takeaway:
+        "Verify read exposure via `get` or `wget -m`, and verify write permissions harmlessly with an empty marker file via `put` (`STOR`).",
       intro:
         "Authorized verification tests read access (`get`, `wget`) and write access (`put` / `STOR`) within agreed scope boundaries.",
       diagramIds: [],
@@ -980,13 +885,13 @@ export const ftpNote: SecurityNoteEntry = {
         },
         {
           type: "paragraph",
-          text: "Writable FTP directories become critical when shared with downstream services such as web application roots. Upload permission alone does not grant code execution; additional vulnerabilities, loose permissions, or insecure integrations are required."
+          text: "**Chained-risk boundary:** Writable FTP folders alone do not grant code execution; severe impact requires chained weaknesses such as shared web roots or lax OS permissions."
         },
         {
           type: "context-links",
           links: [
             {
-              label: "Explore Security Implications",
+              label: "Explore LFI, Log Poisoning & RCE Chains",
               actionKind: "inspect",
               inspectorId: "upload-security-implications"
             }
@@ -998,6 +903,8 @@ export const ftpNote: SecurityNoteEntry = {
       id: "nmap-footprinting",
       shortTitle: "Nmap Footprinting",
       title: "Footprinting FTP with Nmap",
+      takeaway:
+        "Combine `-sV -sC -p21` to fingerprint vsFTPd version, anonymous login, and server status in one pass.",
       intro:
         "Nmap detects FTP services, versions, and configuration exposure using the Nmap Scripting Engine (NSE).",
       diagramIds: ["ftp-nmap-trace"],
@@ -1010,7 +917,7 @@ export const ftpNote: SecurityNoteEntry = {
         },
         {
           type: "paragraph",
-          text: "NSE scripts are commonly stored under `/usr/share/nmap/scripts/`. Running `--script-updatedb` rebuilds Nmap's local script database index rather than downloading new scripts."
+          text: "**Local script index:** NSE scripts live under `/usr/share/nmap/scripts/`, and `--script-updatedb` rebuilds Nmap's local script database index rather than downloading scripts from the internet."
         },
         {
           type: "terminal",
@@ -1134,6 +1041,8 @@ export const ftpNote: SecurityNoteEntry = {
       id: "manual-and-tls",
       shortTitle: "Manual & TLS",
       title: "Manual FTP Interaction and TLS",
+      takeaway:
+        "Use `nc` or `telnet` for raw TCP 21 control probing, and `openssl s_client -starttls ftp` to inspect FTPS certificates.",
       intro:
         "Netcat and Telnet probe banners and raw commands on TCP port 21, while OpenSSL inspects FTPS certificates over STARTTLS.",
       diagramIds: [],
@@ -1146,7 +1055,7 @@ export const ftpNote: SecurityNoteEntry = {
         },
         {
           type: "paragraph",
-          text: "Netcat and Telnet open raw control connections on port 21 for manual commands, though they do not automatically manage separate FTP Data Connections."
+          text: "**Control-only limit:** Netcat and Telnet talk directly to the Control Channel (`TCP 21`) and do not automatically open secondary FTP Data Connections."
         },
         {
           type: "terminal",
@@ -1179,7 +1088,7 @@ export const ftpNote: SecurityNoteEntry = {
         },
         {
           type: "paragraph",
-          text: "OpenSSL upgrades a plain-text FTP control socket via `-starttls ftp` to inspect TLS parameters and X.509 certificates. Certificate Subject fields may reveal hostnames or organization names, but should not be trusted as verified identity, especially for self-signed certificates."
+          text: "**STARTTLS upgrade:** OpenSSL sends `AUTH TLS` on plain-text TCP 21 to negotiate TLS and pull the server X.509 certificate for inspection."
         },
         {
           type: "terminal",
@@ -1321,44 +1230,69 @@ export const ftpNote: SecurityNoteEntry = {
         }
       ]
     },
-    "service-startup": {
-      id: "service-startup",
-      label: "Service Startup & On-Demand Operation",
+    "vsftpd-directives-reference": {
+      id: "vsftpd-directives-reference",
+      label: "Additional vsFTPd Directives (Uploads, Banners, Logging & TLS Files)",
       category: "Directive",
       shortDefinition:
-        "Standalone listening vs superserver activation (listen, listen_ipv6, and connect_from_port_20).",
+        "Reference directives omitted from the core inline table covering upload ownership, directory notices, greeting banners, transfer logging, and certificate paths.",
       details: [
-        "Standalone IPv4 (listen=YES): vsFTPd remains running in the background listening on IPv4 TCP port 21.",
-        "On-demand mode (both listen=NO and listen_ipv6=NO): Another service such as inetd holds TCP port 21 and launches vsFTPd only when needed, saving RAM when FTP is rarely used.",
-        "Default Linux distributions often set listen=NO alongside listen_ipv6=YES so one dual-stack IPv6 socket handles connections independently.",
-        "Active FTP source port (connect_from_port_20=YES): Requests outgoing Active Data Connections originate from port 20, though Active data port behavior remains configuration-dependent."
+        "banner_file=/etc/ftp_banner.txt overrides an inline ftpd_banner string when both appear in /etc/vsftpd.conf.",
+        "xferlog_enable=YES records uploads and downloads for auditing; verify log retention paths alongside Fail2ban rules."
       ],
-      securityNote:
-        "On-demand startup does not conceal FTP from Nmap or port scanners because inetd or systemd still keeps TCP port 21 open and listening."
+      tables: [
+        {
+          caption: "Upload ownership, banners, time, logging, and TLS key files",
+          columns: ["Directive", "Behavior"],
+          rows: [
+            ["chown_uploads=YES", "Reassigns ownership of anonymously uploaded files."],
+            ["chown_username=username", "Specifies the Linux account receiving anonymous uploads."],
+            ["dirmessage_enable=YES", "Displays directory entry notices when users enter folders."],
+            ["message_file=.message", "Defines the filename holding each directory entry notice."],
+            ["ftpd_banner=Welcome to FTP Server", "Sets an inline 220 welcome greeting inside vsftpd.conf."],
+            ["banner_file=/etc/ftp_banner.txt", "Loads the 220 greeting from a file and overrides ftpd_banner."],
+            ["use_localtime=YES", "Formats directory timestamps in server local time rather than GMT."],
+            ["xferlog_enable=YES", "Logs file transfers for operational auditing."],
+            ["rsa_cert_file", "Path to the server X.509 certificate for FTPS."],
+            ["rsa_private_key_file", "Path to the private key paired with rsa_cert_file."]
+          ]
+        }
+      ]
+    },
+    "service-startup": {
+      id: "service-startup",
+      label: "Service Startup & Socket Conflicts",
+      category: "Directive",
+      shortDefinition:
+        "Dual-stack socket binding behavior, systemd/inetd handoff, and port 20 source-port privilege mechanics.",
+      details: [
+        "Enabling both listen=YES and listen_ipv6=YES simultaneously causes a port 21 bind conflict on default dual-stack Linux kernels unless IPV6_V6ONLY is adjusted.",
+        "Linux distributions typically ship listen=NO with listen_ipv6=YES so one dual-stack IPv6 socket handles both IPv6 and IPv4 clients.",
+        "When spawned on demand via inetd or a systemd socket unit, the superserver accepts the inbound TCP handshake on port 21 before passing the file descriptor to vsFTPd.",
+        "connect_from_port_20=YES relies on privileged port binding (TCP source port 20) for Active Data Connections, which remains configuration-dependent."
+      ]
     },
     "process-isolation": {
       id: "process-isolation",
-      label: "Pre-Auth Process Isolation (secure_chroot_dir)",
+      label: "Pre-Auth Sandbox Architecture",
       category: "Directive",
       shortDefinition:
-        "Confines unprivileged pre-authentication vsFTPd command handlers inside empty directory /var/run/vsftpd/empty.",
+        "Multi-stage privilege separation and filesystem permissions behind secure_chroot_dir.",
       details: [
-        "Principle of Least Privilege: Pre-login command handlers parse network input without needing visibility into /etc, /home, or /var.",
-        "Distinct purpose: secure_chroot_dir=/var/run/vsftpd/empty is reserved exclusively for daemon isolation and is never used for user file sharing, uploads, or downloads."
+        "Startup permission check: vsFTPd refuses to start if /var/run/vsftpd/empty is missing or writable by the unprivileged FTP user.",
+        "Privilege drop flow: A privileged parent opens sockets and delegates unauthenticated TCP 21 parsing to a child confined inside this empty directory.",
+        "Chroot limits filesystem traversal to a restricted directory tree; it is not a complete security boundary against every process or kernel compromise."
       ],
-      diagramId: "ftp-chroot-sandbox",
-      securityNote:
-        "Chroot limits filesystem traversal to a restricted directory tree; it is not a complete security boundary that prevents every possible form of process or kernel compromise."
+      diagramId: "ftp-chroot-sandbox"
     },
     "chroot-rules": {
       id: "chroot-rules",
-      label: "Authenticated User Chroot Rules",
+      label: "Authenticated User Chroot Matrix",
       category: "Directive",
       shortDefinition:
-        "Controls whether authenticated local Linux accounts can browse outside their home directories via chroot_local_user and /etc/vsftpd.chroot_list.",
+        "Decision table for /etc/vsftpd.chroot_list interaction and writable-chroot protections.",
       details: [
-        "Process isolation vs user restriction: secure_chroot_dir isolates pre-auth vsFTPd workers inside an empty directory, whereas chroot_local_user restricts authenticated local logins after authentication.",
-        "Enabling write permissions on a chrooted home directory interacts with vsFTPd writeable-chroot protections (allow_writeable_chroot)."
+        "Writable home directory conflict: Modern vsFTPd blocks chrooted logins with a writable root folder unless allow_writeable_chroot=YES is explicitly configured or write rights sit in a subfolder."
       ],
       tables: [
         {
@@ -1371,19 +1305,18 @@ export const ftpNote: SecurityNoteEntry = {
         }
       ],
       securityNote:
-        "Accidental reversal of YES/NO leaves system directories readable to FTP logins. As with all chroot configurations, treat chroot as defense-in-depth filesystem restriction rather than an absolute sandbox."
+        "Accidental reversal of YES/NO leaves host directories readable to authenticated FTP logins."
     },
     "compare-listings": {
       id: "compare-listings",
-      label: "Compare Directory Listings (hide_ids & Fail2ban)",
+      label: "Masked vs Raw Ownership Output (hide_ids & Fail2ban)",
       category: "Directive",
       sourceLabel: "Illustrative example",
       shortDefinition:
-        "Contrasts raw UID/username disclosure in FTP listings against masked ftp/ftp ownership with hide_ids=YES.",
+        "Side-by-side LIST comparison showing how unmasked UIDs assist username enumeration and SSH password spraying.",
       details: [
-        "hide_ids=YES rewrites displayed owner and group strings to ftp in protocol LIST output without changing real Linux UID/GID ownership or on-disk permissions.",
-        "Exposed usernames (or UID numbers tied to shared host accounts) help attackers assemble valid username lists for brute-force or credential-stuffing attacks against FTP or SSH.",
-        "Defensive layer: Properly configured Fail2ban monitors authentication logs (such as vsFTPd or SSH failures) and bans offending client IPs after repeated failed login attempts."
+        "Leaked usernames or predictable UID numbers (such as 1002) often map directly to local Linux login accounts reusable in SSH or sudo brute-force attempts.",
+        "Defensive layer: Fail2ban parses vsFTPd and SSH authentication logs to automatically block source IPs after repeated 530 Login incorrect failures."
       ],
       terminal: {
         id: "insp-term-hide-ids",
@@ -1404,30 +1337,27 @@ export const ftpNote: SecurityNoteEntry = {
     },
     "transport-security": {
       id: "transport-security",
-      label: "Transport Security: FTP, FTPS, and SFTP",
+      label: "FTPS Enforcement Directives & Key Paths",
       category: "Protocol",
       shortDefinition:
-        "Separates cleartext FTP from TLS-encrypted FTPS (rsa_cert_file, rsa_private_key_file, ssl_enable) and SSH-based SFTP.",
+        "Default certificate locations and mandatory encryption directives beyond ssl_enable=YES.",
       details: [
+        "FTP and SFTP are separate protocols: FTPS wraps RFC 959 FTP in TLS inside vsFTPd, whereas SFTP is the SSH File Transfer Protocol subsystem over SSH.",
         "Default Debian/Ubuntu certificate paths commonly point to /etc/ssl/certs/ssl-cert-snakeoil.pem (rsa_cert_file) and /etc/ssl/private/ssl-cert-snakeoil.key (rsa_private_key_file).",
-        "Enabling TLS vs enforcing TLS: Setting ssl_enable=YES enables FTPS capability on vsFTPd, whereas enforcing encryption for all sessions requires additional directives such as force_local_logins_ssl and force_local_data_ssl.",
-        "FTP and SFTP are separate protocols: FTPS wraps RFC 959 FTP over TLS inside vsFTPd, while SFTP is the SSH File Transfer Protocol subsystem running over SSH."
+        "Enforcing TLS after enabling ssl_enable=YES requires force_local_logins_ssl=YES and force_local_data_ssl=YES so clients cannot silently fall back to cleartext authentication or transfers."
       ],
-      diagramId: "ftp-protocol-security",
-      securityNote:
-        "Standard plain-text FTP exposes usernames, passwords, commands, and file payloads to passive packet capture on shared networks."
+      diagramId: "ftp-protocol-security"
     },
     "pam-denylist": {
       id: "pam-denylist",
-      label: "PAM Authentication and /etc/ftpusers Denylist",
+      label: "PAM Module Flow & Sample /etc/ftpusers",
       category: "Concept",
       sourceLabel: "Illustrative example",
       shortDefinition:
-        "How /etc/pam.d/vsftpd enforces the /etc/ftpusers denylist to block privileged or designated accounts.",
+        "How /etc/pam.d/vsftpd enforces /etc/ftpusers via pam_listfile.so and illustrative denylist syntax.",
       details: [
-        "When PAM rules in /etc/pam.d/vsftpd invoke pam_listfile.so (pointing to /etc/ftpusers), listed accounts receive 530 Login incorrect even with valid OS passwords.",
-        "Administrators add root, service accounts, or restricted local usernames to reduce attack surface.",
-        "Note: Example entries such as guest, john, and kevin illustrate file structure only and are not universal Linux defaults; real defaults typically block system accounts such as root, daemon, and nobody."
+        "When PAM rules in /etc/pam.d/vsftpd invoke pam_listfile.so pointing to /etc/ftpusers, listed accounts fail with 530 Login incorrect even when supplying valid OS credentials.",
+        "Illustrative caveat: Usernames such as guest, john, and kevin below show file format only; standard host defaults primarily list system accounts such as root, daemon, and nobody."
       ],
       terminal: {
         id: "insp-term-ftpusers-ex",
@@ -1664,19 +1594,18 @@ export const ftpNote: SecurityNoteEntry = {
     },
     "upload-security-implications": {
       id: "upload-security-implications",
-      label: "Conditional Security Implications of Writable FTP",
+      label: "Conditional Escalation Chains (LFI, Log Poisoning & RCE)",
       category: "Risk",
       shortDefinition:
-        "How writable FTP folders intersect with downstream services, and the preconditions required for severe impact.",
+        "Concrete downstream weaknesses that elevate writable FTP shares or server logs to execution.",
       details: [
-        "Unauthorized file modification: Replacing static templates, scripts, or shared documents.",
-        "Information exposure: Writing configuration traps or reading shared internal resources.",
-        "Local File Inclusion (LFI): If a vulnerable web application includes files located inside the writable FTP folder.",
-        "FTP log poisoning: If server transfer or error logs containing user-controlled filenames/strings are parsed unsafely or included by a web script.",
-        "Remote Code Execution (RCE) and privilege escalation: Conditional outcomes when an executable script lands inside a web root, cron job, or privileged import path."
+        "Unauthorized file modification: Overwriting static templates, scheduled scripts, or shared internal documents.",
+        "Local File Inclusion (LFI): Reading or including uploaded files when a vulnerable web application shares the FTP directory path.",
+        "FTP log poisoning: Injecting attacker-controlled payloads via filenames or usernames when transfer/error logs are parsed unsafely by a web script.",
+        "Remote Code Execution (RCE) and privilege escalation: Occurs only when an uploaded executable lands inside a web root, cron job, or privileged loader path."
       ],
       securityNote:
-        "Important qualification: FTP upload access alone does not execute files. Code execution occurs only when chained with secondary weaknesses, excessive OS permissions, or insecure web/application integrations."
+        "Report upload findings alongside exact filesystem path mappings to verify whether an integration path actually exists."
     },
     "nmap-ftp-scripts": {
       id: "nmap-ftp-scripts",
@@ -1774,9 +1703,9 @@ export const ftpNote: SecurityNoteEntry = {
       category: "Command",
       sourceLabel: "Illustrative example",
       shortDefinition:
-        "Raw TCP port 21 banner capture and manual USER/PASS control interaction without an FTP client.",
+        "Raw TCP port 21 banner capture and manual USER/PASS/QUIT exchange without an FTP client.",
       details: [
-        "Netcat and Telnet speak only to the single TCP Control Connection and do not spawn or bind secondary FTP Data Connections automatically."
+        "Stepping manually exposes exact state transitions: 220 banner on connect, 331 password challenge after USER, 230 session ready after PASS, and 221 on QUIT."
       ],
       terminal: {
         id: "insp-term-manual-nc",
@@ -1805,7 +1734,7 @@ export const ftpNote: SecurityNoteEntry = {
       shortDefinition:
         "Full FTPS certificate fields, verification message, certificate chain, and negotiated TLS 1.3 cipher details retrieved via -starttls ftp.",
       details: [
-        "OpenSSL opens TCP 21 as plain FTP, sends AUTH TLS, and upgrades to TLS before reading the server certificate."
+        "Inspecting TLSv1.3 cipher negotiation (TLS_AES_256_GCM_SHA384) alongside the X.509 chain extracts internal hostnames (master.inlanefreight.htb) and trust flags (verify error:num=18)."
       ],
       tables: [
         {

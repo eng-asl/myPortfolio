@@ -194,3 +194,23 @@ test("Shared Stage 2 Notes architecture supports sticky TOC, focus-managed pop-u
   assert.match(globalsCss, /overflow-x:\s*clip/);
   assert.equal(/html\s*\{[^}]*overflow-x:\s*hidden/.test(globalsCss), false);
 });
+
+test("FTP article exposes per-section H2 takeaways, non-duplicated directives reference, and in-article search across prose and pop-ups", () => {
+  const ftpSource = read("data/notes/security/footprinting/ftp.ts");
+  assert.match(ftpSource, /"vsftpd-directives-reference":\s*\{/);
+  assert.equal(
+    (ftpSource.match(/takeaway:\s*\n?\s*"/g) || []).length,
+    12,
+    "all 12 FTP sections should define a single-line H2 takeaway"
+  );
+
+  const toc = read("components/notes/NoteTableOfContents.tsx");
+  assert.match(toc, /note-search-input-/);
+  assert.match(toc, /onSelectSearchHit/);
+  assert.match(toc, /rankSearchHits/);
+
+  const workspace = read("components/notes/SecurityNoteWorkspace.tsx");
+  assert.match(workspace, /buildNoteSearchIndex/);
+  assert.match(workspace, /searchHitActive/);
+  assert.match(workspace, /docTakeaway/);
+});

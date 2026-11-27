@@ -24,26 +24,242 @@ import type { NoteWindowPosition } from "./useNoteDraggable";
 import { NoteTerminal } from "./NoteTerminal";
 import { DiagramPlate } from "./DiagramPlate";
 import { FloatingNoteWindow } from "./FloatingNoteWindow";
-import { NoteTableOfContents, type TocItem } from "./NoteTableOfContents";
+import {
+  NoteTableOfContents,
+  type NoteSearchItem,
+  type TocItem
+} from "./NoteTableOfContents";
 import styles from "./SecurityNotes.module.css";
 
 interface SecurityNoteWorkspaceProps {
   note: SecurityNoteEntry;
 }
 
-function renderInlineCode(text: string): React.ReactNode {
+function renderCodeSegments(text: string, keyPrefix = ""): React.ReactNode {
   const parts = text.split(/(`[^`]+`)/g);
   if (parts.length === 1) return text;
   return parts.map((segment, index) => {
     if (segment.startsWith("`") && segment.endsWith("`") && segment.length > 2) {
       return (
-        <code key={index} className={styles.inlineCode}>
+        <code key={`${keyPrefix}c-${index}`} className={styles.inlineCode}>
           {segment.slice(1, -1)}
         </code>
       );
     }
-    return <React.Fragment key={index}>{segment}</React.Fragment>;
+    return <React.Fragment key={`${keyPrefix}t-${index}`}>{segment}</React.Fragment>;
   });
+}
+
+function renderInlineCode(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  if (parts.length === 1) return renderCodeSegments(text);
+  return parts.map((segment, index) => {
+    if (segment.startsWith("**") && segment.endsWith("**") && segment.length > 4) {
+      return (
+        <strong key={`b-${index}`} className={styles.inlineStrong}>
+          {renderCodeSegments(segment.slice(2, -2), `b-${index}-`)}
+        </strong>
+      );
+    }
+    return (
+      <React.Fragment key={`r-${index}`}>
+        {renderCodeSegments(segment, `r-${index}-`)}
+      </React.Fragment>
+    );
+  });
+}
+
+function stripMarkdownTokens(text: string): string {
+  return text.replace(/`([^`]+)`/g, "$1").replace(/\*\*([^*]+)\*\*/g, "$1");
+}
+
+function buildNoteSearchIndex(note: SecurityNoteEntry): NoteSearchItem[] {
+  const items: NoteSearchItem[] = [];
+  const inspectorParentMap: Record<string, { targetDomId: string; sectionTitle: string }> = {};
+
+  const indexBlocks = (
+    blocks: NoteContentBlock[],
+    partId: string,
+    sectionTitle: string,
+    keyPrefix: string
+  ) => {
+    blocks.forEach((block, idx) => {
+      const blockKey = `${keyPrefix}-${idx}`;
+      switch (block.type) {
+        case "subheading": {
+          const domId = block.id || slugifyHeading(block.text);
+          items.push({
+            id: `sub-${blockKey}`,
+            kind: "SEC",
+            title: block.text,
+            sectionTitle,
+            snippet: "",
+            searchText: `${block.text} ${sectionTitle}`.toLowerCase(),
+            targetDomId: domId
+          });
+          break;
+        }
+        case "paragraph": {
+          const clean = stripMarkdownTokens(block.text);
+          items.push({
+            id: `para-${blockKey}`,
+            kind: "SEC",
+            title: sectionTitle,
+            sectionTitle: "Article prose",
+            snippet: clean.slice(0, 110) + (clean.length > 110 ? "..." : ""),
+            searchText: `${clean} ${sectionTitle}`.toLowerCase(),
+            targetDomId: `para-${blockKey}`
+          });
+          break;
+        }
+        case "settings-table": {
+          block.rows.forEach((row, rIdx) => {
+            items.push({
+              id: `set-${block.id}-${rIdx}`,
+              kind: "CONF",
+              title: row.setting,
+              sectionTitle,
+              snippet: stripMarkdownTokens(row.summary),
+              searchText: `${row.setting} ${row.summary} ${sectionTitle}`.toLowerCase(),
+              targetDomId: `row-${block.id}-${rIdx}`,
+              inspectorId: row.inspectorId
+            });
+          });
+          break;
+        }
+        case "comparison-table": {
+          const isCmd = /nmap|wget|diagnostics/i.test(block.id);
+          block.rows.forEach((row, rIdx) => {
+            const first = row.cells[0] ?? "";
+            const rest = stripMarkdownTokens(row.cells.slice(1).join(" - "));
+            items.push({
+              id: `cmp-${block.id}-${rIdx}`,
+              kind: isCmd ? "CMD" : "CONF",
+              title: first,
+              sectionTitle,
+              snippet: rest,
+              searchText: `${row.cells.join(" ")} ${sectionTitle}`.toLowerCase(),
+              targetDomId: `row-${block.id}-${rIdx}`,
+              inspectorId: row.inspectorId
+            });
+          });
+          break;
+        }
+        case "response-codes": {
+          block.codes.forEach((entry) => {
+            items.push({
+              id: `code-${block.id}-${entry.code}`,
+              kind: "CODE",
+              title: `FTP ${entry.code}`,
+              sectionTitle,
+              snippet: entry.meaning,
+              searchText: `${entry.code} ${entry.meaning} ${sectionTitle}`.toLowerCase(),
+              targetDomId: `row-${block.id}-${entry.code}`,
+              inspectorId: entry.inspectorId
+            });
+          });
+          break;
+        }
+        case "terminal": {
+          const term = block.terminal;
+          const allText = term.lines.map((l) => l.text).join(" ");
+          const firstCmd =
+            term.copyCommand ||
+            term.lines.find((l) => l.kind === "command")?.text ||
+            term.title;
+          items.push({
+            id: `term-${term.id}`,
+            kind: "CMD",
+            title: term.title || firstCmd,
+            sectionTitle,
+            snippet: firstCmd,
+            searchText: `${term.title} ${term.copyCommand || ""} ${allText} ${sectionTitle}`.toLowerCase(),
+            targetDomId: `termwrap-${term.id}`
+          });
+          break;
+        }
+        case "context-links": {
+          block.links.forEach((link) => {
+            if (link.inspectorId && !inspectorParentMap[link.inspectorId]) {
+              inspectorParentMap[link.inspectorId] = {
+                targetDomId: `trigger-${link.inspectorId}`,
+                sectionTitle
+              };
+            }
+          });
+          break;
+        }
+        case "sub-sections": {
+          block.sections.forEach((sub) => {
+            indexBlocks(sub.blocks, partId, sub.shortLabel || sectionTitle, `${blockKey}-${sub.id}`);
+          });
+          break;
+        }
+        default:
+          break;
+      }
+    });
+  };
+
+  for (const part of note.parts) {
+    const cleanIntro = stripMarkdownTokens(part.takeaway || part.intro);
+    items.push({
+      id: `part-${part.id}`,
+      kind: "SEC",
+      title: part.title,
+      sectionTitle: part.shortTitle,
+      snippet: cleanIntro,
+      searchText: `${part.title} ${part.shortTitle} ${part.takeaway || ""} ${part.intro}`.toLowerCase(),
+      targetDomId: `part-${part.id}`
+    });
+    indexBlocks(part.blocks, part.id, part.shortTitle, part.id);
+  }
+
+  for (const entry of Object.values(note.inspectors)) {
+    const parent = inspectorParentMap[entry.id];
+    const targetDomId = parent?.targetDomId || "extended-reference";
+    const sectionTitle = parent?.sectionTitle || "Reference Pop-up";
+    const terminals = [
+      ...(entry.terminal ? [entry.terminal] : []),
+      ...(entry.terminals ?? [])
+    ];
+    const terminalText = terminals
+      .map((t) => `${t.title} ${t.copyCommand || ""} ${t.lines.map((l) => l.text).join(" ")}`)
+      .join(" ");
+    const tableText = (entry.tables ?? [])
+      .map((tbl) => `${tbl.caption || ""} ${tbl.rows.flat().join(" ")}`)
+      .join(" ");
+
+    items.push({
+      id: `insp-${entry.id}`,
+      kind: "POPUP",
+      title: entry.label,
+      sectionTitle,
+      snippet: stripMarkdownTokens(entry.shortDefinition),
+      searchText: `${entry.label} ${entry.shortDefinition} ${entry.details.join(" ")} ${(entry.steps ?? []).join(" ")} ${tableText} ${terminalText} ${entry.securityNote || ""}`.toLowerCase(),
+      targetDomId,
+      inspectorId: entry.id
+    });
+
+    (entry.tables ?? []).forEach((tbl, tIdx) => {
+      tbl.rows.forEach((row, rIdx) => {
+        const keyCell = row[0] ?? "";
+        const rest = stripMarkdownTokens(row.slice(1).join(" - "));
+        items.push({
+          id: `insprow-${entry.id}-${tIdx}-${rIdx}`,
+          kind: entry.id === "vsftpd-directives-reference" ? "CONF" : "POPUP",
+          title: keyCell,
+          sectionTitle,
+          snippet: rest,
+          searchText: `${keyCell} ${rest} ${entry.label}`.toLowerCase(),
+          targetDomId,
+          inspectorId: entry.id
+        });
+      });
+    });
+  }
+
+  return items;
 }
 
 function renderActionIcon(actionKind?: NoteActionKind) {
@@ -67,6 +283,9 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
   const [previewDiagram, setPreviewDiagram] = useState<DiagramSlot | null>(null);
   const [floatingPos, setFloatingPos] = useState<NoteWindowPosition | undefined>(undefined);
   const lastTriggerRef = useRef<HTMLElement | null>(null);
+  const highlightTimerRef = useRef<number | null>(null);
+
+  const searchItems = useMemo(() => buildNoteSearchIndex(note), [note]);
 
   const diagramsById = useMemo(() => {
     const map: Record<string, DiagramSlot> = {};
@@ -202,6 +421,33 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
     }
   };
 
+  const handleSelectSearchHit = (hit: NoteSearchItem) => {
+    if (typeof window !== "undefined") {
+      const prev = document.querySelector(`.${styles.searchHitActive}`);
+      if (prev) prev.classList.remove(styles.searchHitActive);
+
+      const targetEl = document.getElementById(hit.targetDomId);
+      if (targetEl) {
+        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        targetEl.scrollIntoView({
+          behavior: reduceMotion ? "auto" : "smooth",
+          block: "center"
+        });
+        targetEl.classList.add(styles.searchHitActive);
+        if (highlightTimerRef.current !== null) {
+          window.clearTimeout(highlightTimerRef.current);
+        }
+        highlightTimerRef.current = window.setTimeout(() => {
+          targetEl.classList.remove(styles.searchHitActive);
+        }, 2400);
+      }
+    }
+
+    if (hit.inspectorId) {
+      openInspector(hit.inspectorId);
+    }
+  };
+
   const renderSubSection = (sub: NoteSubSection) => (
     <div key={sub.id} className={styles.subSectionBlock}>
       <h3 id={slugifyHeading(sub.title)} className={styles.docSubheading}>
@@ -218,7 +464,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
     switch (block.type) {
       case "paragraph":
         return (
-          <div key={key} className={styles.paragraphBlock}>
+          <div key={key} id={`para-${key}`} className={styles.paragraphBlock}>
             <p className={styles.docParagraph}>{renderInlineCode(block.text)}</p>
             {block.terms?.length ? (
               <div className={styles.contextLinksRow}>
@@ -358,6 +604,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                 return (
                   <button
                     key={`${key}-${link.inspectorId}`}
+                    id={`trigger-${link.inspectorId}`}
                     type="button"
                     className={styles.contextBtn}
                     data-testid={`popup-trigger-${link.inspectorId}`}
@@ -409,7 +656,11 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
         );
 
       case "terminal":
-        return <NoteTerminal key={key} terminal={block.terminal} />;
+        return (
+          <div key={key} id={`termwrap-${block.terminal.id}`} className={styles.searchTargetWrap}>
+            <NoteTerminal terminal={block.terminal} />
+          </div>
+        );
 
       case "settings-table": {
         const hasActions = block.rows.some(
@@ -428,8 +679,8 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {block.rows.map((row) => (
-                    <tr key={row.setting}>
+                  {block.rows.map((row, rIdx) => (
+                    <tr key={row.setting} id={`row-${block.id}-${rIdx}`}>
                       <td>
                         <code className={styles.settingCode}>{row.setting}</code>
                       </td>
@@ -476,7 +727,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                 </thead>
                 <tbody>
                   {block.rows.map((row, rIdx) => (
-                    <tr key={rIdx}>
+                    <tr key={rIdx} id={`row-${block.id}-${rIdx}`}>
                       {row.cells.map((cell, cIdx) => (
                         <td key={cIdx}>
                           {cIdx === 0 ? (
@@ -527,7 +778,7 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                 </thead>
                 <tbody>
                   {block.codes.map((item) => (
-                    <tr key={item.code}>
+                    <tr key={item.code} id={`row-${block.id}-${item.code}`}>
                       <td>
                         <code className={styles.settingCode}>{item.code}</code>
                       </td>
@@ -622,6 +873,11 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
       aria-labelledby={`part-heading-${part.id}`}
     >
       <h2 id={`part-heading-${part.id}`}>{part.title}</h2>
+      {part.takeaway ? (
+        <p className={styles.docTakeaway}>
+          <strong>Key takeaway:</strong> {renderInlineCode(part.takeaway)}
+        </p>
+      ) : null}
       <p className={styles.docSectionIntro}>{renderInlineCode(part.intro)}</p>
       <div className={styles.blocksStack}>
         {part.blocks.map((block, idx) => renderBlock(block, `${part.id}-${idx}`))}
@@ -687,7 +943,11 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
         </header>
 
         <div className={styles.docLayout}>
-          <NoteTableOfContents items={tocItems} />
+          <NoteTableOfContents
+            items={tocItems}
+            searchItems={searchItems}
+            onSelectSearchHit={handleSelectSearchHit}
+          />
 
           <article className={styles.docBody} data-testid="vertical-note-article">
             {note.parts.map((part) => renderPartBody(part))}

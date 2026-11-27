@@ -233,6 +233,7 @@ export interface NotePart {
   indexLabel?: string;
   shortTitle: string;
   title: string;
+  takeaway?: string;
   intro: string;
   diagramIds: string[];
   blocks: NoteContentBlock[];

@@ -382,6 +382,10 @@ export function renderSecurityNoteMarkdown(note: SecurityNoteEntry): string {
   for (const part of note.parts) {
     out.push(`## ${cleanDashes(part.title)}`);
     out.push("");
+    if (part.takeaway) {
+      out.push(`**Key takeaway:** ${cleanDashes(part.takeaway)}`);
+      out.push("");
+    }
     out.push(cleanDashes(part.intro));
     out.push("");
     out.push(

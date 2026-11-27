@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { ChevronDown, List } from "lucide-react";
+import { ChevronDown, List, Search, X } from "lucide-react";
 import styles from "./SecurityNotes.module.css";
 
 export interface TocSubheading {
@@ -15,11 +15,61 @@ export interface TocItem {
   subheadings?: TocSubheading[];
 }
 
-interface NoteTableOfContentsProps {
-  items: TocItem[];
+export type NoteSearchKind = "SEC" | "CONF" | "CMD" | "CODE" | "POPUP";
+
+export interface NoteSearchItem {
+  id: string;
+  kind: NoteSearchKind;
+  title: string;
+  sectionTitle: string;
+  snippet: string;
+  searchText: string;
+  targetDomId: string;
+  inspectorId?: string;
 }
 
-export function NoteTableOfContents({ items }: NoteTableOfContentsProps) {
+interface NoteTableOfContentsProps {
+  items: TocItem[];
+  searchItems?: NoteSearchItem[];
+  onSelectSearchHit?: (item: NoteSearchItem) => void;
+}
+
+function rankSearchHits(items: NoteSearchItem[], rawQuery: string): NoteSearchItem[] {
+  const query = rawQuery.trim().toLowerCase();
+  if (!query) return [];
+  const tokens = query.split(/\s+/).filter(Boolean);
+  if (!tokens.length) return [];
+
+  const scored: Array<{ item: NoteSearchItem; score: number }> = [];
+  for (const item of items) {
+    const titleLower = item.title.toLowerCase();
+    const snippetLower = item.snippet.toLowerCase();
+    const haystack = item.searchText;
+    if (!tokens.every((token) => haystack.includes(token))) continue;
+
+    let score = 0;
+    if (titleLower === query) score += 120;
+    else if (titleLower.startsWith(query)) score += 85;
+    else if (titleLower.includes(query)) score += 60;
+    else if (tokens.every((token) => titleLower.includes(token))) score += 45;
+
+    if (item.kind === "CONF" || item.kind === "CMD" || item.kind === "CODE") score += 20;
+    else if (item.kind === "POPUP") score += 12;
+    else score += 8;
+
+    if (snippetLower.includes(query)) score += 15;
+    scored.push({ item, score });
+  }
+
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, 14).map((entry) => entry.item);
+}
+
+export function NoteTableOfContents({
+  items,
+  searchItems = [],
+  onSelectSearchHit
+}: NoteTableOfContentsProps) {
   const flatIds = useMemo(() => {
     const ids: Array<{ id: string; title: string }> = [];
     for (const item of items) {
@@ -35,10 +85,19 @@ export function NoteTableOfContents({ items }: NoteTableOfContentsProps) {
 
   const [activeId, setActiveId] = useState<string>(flatIds[0]?.id ?? "");
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
+  const [query, setQuery] = useState<string>("");
 
   const asideRef = useRef<HTMLElement | null>(null);
   const mobileToggleRef = useRef<HTMLButtonElement | null>(null);
   const mobileBarRef = useRef<HTMLDivElement | null>(null);
+  const desktopSearchRef = useRef<HTMLInputElement | null>(null);
+  const mobileSearchRef = useRef<HTMLInputElement | null>(null);
+
+  const searchHits = useMemo(
+    () => rankSearchHits(searchItems, query),
+    [searchItems, query]
+  );
+  const hasQuery = query.trim().length > 0;
 
   useEffect(() => {
     if (!flatIds.length || typeof window === "undefined") return;
@@ -139,6 +198,50 @@ export function NoteTableOfContents({ items }: NoteTableOfContentsProps) {
     };
   }, [mobileOpen]);
 
+  useEffect(() => {
+    if (!searchItems.length || typeof window === "undefined") return;
+    const onShortcut = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isEditable =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target?.isContentEditable;
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        const asideVisible =
+          asideRef.current && window.getComputedStyle(asideRef.current).display !== "none";
+        if (asideVisible) {
+          desktopSearchRef.current?.focus();
+          desktopSearchRef.current?.select();
+        } else {
+          setMobileOpen(true);
+          requestAnimationFrame(() => {
+            mobileSearchRef.current?.focus();
+            mobileSearchRef.current?.select();
+          });
+        }
+        return;
+      }
+
+      if (!isEditable && event.key === "/" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        event.preventDefault();
+        const asideVisible =
+          asideRef.current && window.getComputedStyle(asideRef.current).display !== "none";
+        if (asideVisible) {
+          desktopSearchRef.current?.focus();
+        } else {
+          setMobileOpen(true);
+          requestAnimationFrame(() => {
+            mobileSearchRef.current?.focus();
+          });
+        }
+      }
+    };
+    window.addEventListener("keydown", onShortcut);
+    return () => window.removeEventListener("keydown", onShortcut);
+  }, [searchItems.length]);
+
   const handleLinkClick = (
     event: React.MouseEvent<HTMLAnchorElement>,
     id: string
@@ -160,8 +263,93 @@ export function NoteTableOfContents({ items }: NoteTableOfContentsProps) {
     setMobileOpen(false);
   };
 
+  const handleHitClick = (hit: NoteSearchItem) => {
+    setMobileOpen(false);
+    onSelectSearchHit?.(hit);
+  };
+
   const activeTitle =
     flatIds.find((entry) => entry.id === activeId)?.title ?? items[0]?.title ?? "On this page";
+
+  const renderSearchBox = (inputRef: React.RefObject<HTMLInputElement | null>, scopeId: string) =>
+    searchItems.length > 0 ? (
+      <div className={styles.tocSearchBox}>
+        <Search size={13} className={styles.tocSearchIcon} aria-hidden="true" />
+        <input
+          ref={inputRef}
+          id={`note-search-${scopeId}`}
+          type="search"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && query) {
+              event.stopPropagation();
+              setQuery("");
+            } else if (event.key === "Enter" && searchHits.length > 0) {
+              event.preventDefault();
+              handleHitClick(searchHits[0]);
+            }
+          }}
+          placeholder="Find command, setting, code..."
+          aria-label="Find inside article"
+          data-testid={`note-search-input-${scopeId}`}
+          className={styles.tocSearchInput}
+        />
+        {hasQuery ? (
+          <button
+            type="button"
+            className={styles.tocSearchClear}
+            aria-label="Clear article search"
+            onClick={() => {
+              setQuery("");
+              inputRef.current?.focus();
+            }}
+          >
+            <X size={12} aria-hidden="true" />
+          </button>
+        ) : (
+          <kbd className={styles.tocSearchKbd} aria-hidden="true">
+            Ctrl K
+          </kbd>
+        )}
+      </div>
+    ) : null;
+
+  const renderSearchResults = () => (
+    <div className={styles.tocSearchResults} aria-live="polite">
+      <p className={styles.tocSearchCount}>
+        {searchHits.length === 0
+          ? "No matches in article or pop-ups."
+          : `${searchHits.length} ${searchHits.length === 1 ? "match" : "matches"}`}
+      </p>
+      {searchHits.length > 0 ? (
+        <ul className={styles.tocSearchResultList}>
+          {searchHits.map((hit) => (
+            <li key={hit.id}>
+              <button
+                type="button"
+                className={styles.tocSearchHitBtn}
+                data-testid={`search-hit-${hit.id}`}
+                onClick={() => handleHitClick(hit)}
+              >
+                <span className={styles.tocSearchHitTop}>
+                  <span className={styles.tocSearchHitBadge}>{hit.kind}</span>
+                  <span className={styles.tocSearchHitTitle}>{hit.title}</span>
+                </span>
+                <span className={styles.tocSearchHitMeta}>
+                  {hit.sectionTitle}
+                  {hit.inspectorId ? " (Pop-up)" : ""}
+                </span>
+                {hit.snippet ? (
+                  <span className={styles.tocSearchHitSnippet}>{hit.snippet}</span>
+                ) : null}
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
 
   const renderList = (isMobile: boolean) => (
     <ol className={styles.docTocList}>
@@ -240,7 +428,8 @@ export function NoteTableOfContents({ items }: NoteTableOfContentsProps) {
           hidden={!mobileOpen}
           aria-label="On this page sections"
         >
-          {renderList(true)}
+          {renderSearchBox(mobileSearchRef, "mobile")}
+          {hasQuery ? renderSearchResults() : renderList(true)}
         </nav>
       </div>
 
@@ -251,7 +440,8 @@ export function NoteTableOfContents({ items }: NoteTableOfContentsProps) {
         data-testid="article-jump-nav"
       >
         <p className={styles.docTocTitle}>On this page</p>
-        {renderList(false)}
+        {renderSearchBox(desktopSearchRef, "desktop")}
+        {hasQuery ? renderSearchResults() : renderList(false)}
       </aside>
     </>
   );
