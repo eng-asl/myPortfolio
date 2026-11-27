@@ -87,7 +87,7 @@ test("llms.txt and llms-full.txt index published notes, projects, publications, 
   assert.ok(llmsFull.includes("verify error:num=18"), "llms-full.txt missing full FTP content");
 });
 
-test("robots.js explicitly distinguishes search and user retrieval bots while keeping internal previews disallowed", () => {
+test("robots.js explicitly distinguishes search and user retrieval bots from AI model training bots while keeping internal previews disallowed", () => {
   const robotsSource = read(join("app", "robots.js"));
   for (const token of [
     "Googlebot",
@@ -97,6 +97,13 @@ test("robots.js explicitly distinguishes search and user retrieval bots while ke
     "Claude-SearchBot",
     "Claude-User",
     "PerplexityBot",
+    "Perplexity-User",
+    "GPTBot",
+    "ClaudeBot",
+    "Applebot-Extended",
+    "CCBot",
+    "Bytespider",
+    "Meta-ExternalAgent",
     "/work/ui-preview/",
     "/concepts/"
   ]) {

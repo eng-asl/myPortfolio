@@ -32,6 +32,7 @@ const dictionaries = {
       promptEyebrow: "PROMPT INDEX / QUICK ACCESS",
       promptSub: "Search and reuse visual and technical prompt patterns without starting from an empty page.",
       browsePrompts: "Browse prompt guides",
+      browseNotes: "Read all engineering notes",
       methodEyebrow: "OPERATING METHOD"
     }
   },
@@ -66,6 +67,7 @@ const dictionaries = {
       promptEyebrow: "فهرس البرومبت / وصول سريع",
       promptSub: "دوّر على أنماط برومبت بصرية وتقنية وأعد استخدامها من غير ما تبدأ من صفحة فاضية.",
       browsePrompts: "تصفّح أدلة البرومبت",
+      browseNotes: "تصفّح كل الملاحظات الهندسية",
       methodEyebrow: "طريقة العمل"
     }
   }

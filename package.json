@@ -24,6 +24,7 @@
     "prepare:images": "node scripts/public-image-pipeline.mjs --write",
     "check:images": "node scripts/public-image-pipeline.mjs --check",
     "generate:ai": "node scripts/generate-ai-artifacts.mjs",
+    "indexnow:notify": "node scripts/indexnow-notify.mjs",
     "predev": "npm run prepare:gradify && npm run prepare:images && npm run generate:ai",
     "prebuild": "npm run prepare:gradify && npm run prepare:images && npm run generate:ai",
     "postbuild": "node scripts/prepare-static-segments.mjs"

@@ -8,9 +8,12 @@ export default function robots() {
   return {
     rules: [
       {
+        userAgent: ["Googlebot", "Bingbot", "Applebot", "DuckDuckBot", "Yandex"],
+        allow: "/",
+        disallow: disallowedInternalPaths
+      },
+      {
         userAgent: [
-          "Googlebot",
-          "Bingbot",
           "OAI-SearchBot",
           "ChatGPT-User",
           "Claude-SearchBot",
@@ -20,6 +23,17 @@ export default function robots() {
         ],
         allow: "/",
         disallow: disallowedInternalPaths
+      },
+      {
+        userAgent: [
+          "GPTBot",
+          "ClaudeBot",
+          "Applebot-Extended",
+          "CCBot",
+          "Bytespider",
+          "Meta-ExternalAgent"
+        ],
+        disallow: "/"
       },
       {
         userAgent: "*",

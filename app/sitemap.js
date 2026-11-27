@@ -26,22 +26,32 @@ const routes = [
 ];
 
 export default function sitemap() {
+  const allPosts = getAllPosts();
+  const allSecurityNotes = getAllSecurityNotes();
+
+  const latestSecurityDate = allSecurityNotes
+    .map((note) => new Date(note.updatedAt || note.publishedAt))
+    .filter((date) => !Number.isNaN(date.getTime()))
+    .sort((a, b) => b.getTime() - a.getTime())[0];
+
+  const latestNotesDate = [...allPosts, ...allSecurityNotes]
+    .map((entry) => new Date(entry.updatedAt || entry.publishedAt))
+    .filter((date) => !Number.isNaN(date.getTime()))
+    .sort((a, b) => b.getTime() - a.getTime())[0];
+
   const pages = routes.map((route) => ({
     url: `${siteConfig.url}${route.pathname}/`,
+    ...(route.pathname === "/notes" && latestNotesDate ? { lastModified: latestNotesDate } : {}),
     changeFrequency: route.changeFrequency,
     priority: route.priority
   }));
 
-  const posts = getAllPosts().map((post) => ({
+  const posts = allPosts.map((post) => ({
     url: `${siteConfig.url}/notes/${post.slug}/`,
     lastModified: new Date(post.updatedAt || post.publishedAt),
     changeFrequency: "monthly",
     priority: 0.7
   }));
-
-  const latestSecurityDate = getAllSecurityNotes()
-    .map((note) => new Date(note.updatedAt || note.publishedAt))
-    .sort((a, b) => b.getTime() - a.getTime())[0];
 
   const securityFolders = [
     {
@@ -53,6 +63,7 @@ export default function sitemap() {
     ...getAllSecurityFolders().map((folder) => {
       const folderLatest = folder.notes
         .map((note) => new Date(note.updatedAt || note.publishedAt))
+        .filter((date) => !Number.isNaN(date.getTime()))
         .sort((a, b) => b.getTime() - a.getTime())[0];
       return {
         url: `${siteConfig.url}/notes/security/${folder.slug}/`,
@@ -63,7 +74,7 @@ export default function sitemap() {
     })
   ];
 
-  const securityNotes = getAllSecurityNotes().map((note) => ({
+  const securityNotes = allSecurityNotes.map((note) => ({
     url: `${siteConfig.url}/notes/security/${note.folderSlug}/${note.slug}/`,
     lastModified: new Date(note.updatedAt || note.publishedAt),
     changeFrequency: "monthly",
@@ -94,6 +105,11 @@ export default function sitemap() {
     ...toolCategories.map(category => `/ar/tools/category/${category.slug}/`),
     ...satelliteCalculators.map(tool => `/ar/tools/satellite/${tool.slug}/`),
     ...rfCalculators.map(tool => `/ar/tools/rf/${tool.slug}/`)
-  ].map(pathname => ({ url: `${siteConfig.url}${pathname}`, changeFrequency: "monthly", priority: 0.65 }));
+  ].map(pathname => ({
+    url: `${siteConfig.url}${pathname}`,
+    ...(pathname === "/ar/notes/" && latestNotesDate ? { lastModified: latestNotesDate } : {}),
+    changeFrequency: "monthly",
+    priority: 0.65
+  }));
   return [...new Map([...pages, ...calculators, ...posts, ...securityFolders, ...securityNotes, ...gradify, ...categories, ...work, ...satellite, ...rf, ...arabicRoutes].map(entry => [entry.url, entry])).values()];
 }

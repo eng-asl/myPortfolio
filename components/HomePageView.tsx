@@ -6,6 +6,7 @@ import { profile, projects, workingMethod } from "@/data/portfolio";
 import { workCategories } from "@/data/work-categories";
 import { engineeringTools } from "@/data/tools";
 import { formatDate, getAllPosts } from "@/lib/content";
+import { getSecurityNotesAsPostSummaries } from "@/data/notes/security";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/types";
 import { JsonLd } from "@/components/JsonLd";
@@ -23,7 +24,9 @@ export function HomePageView({ locale }: { locale: Locale }) {
   const prefix = isAr ? "/ar" : "";
   const featuredProjects = projects.filter((project) => project.featured).slice(0, 3);
   const featuredTools = engineeringTools.slice(0, 3);
-  const notes = getAllPosts().slice(0, 3);
+  const notes = [...getSecurityNotesAsPostSummaries(), ...getAllPosts()]
+    .sort((a, b) => Date.parse(b.updatedAt || b.publishedAt) - Date.parse(a.updatedAt || a.publishedAt))
+    .slice(0, 3);
 
   return (
     <div className={`home-page${isAr ? " asl-arabic-page" : ""}`}>
@@ -177,16 +180,19 @@ export function HomePageView({ locale }: { locale: Locale }) {
         </header>
         <div className="brain-grid">
           <div className="notes-list">
-            {notes.map((note, index) => (
-              <Link href={`/notes/${note.slug}/`} key={note.slug}>
-                <span>0{index + 1}</span>
-                <div dir={isAr ? TECH_DIR : undefined}>
-                  <p>{note.category} / {formatDate(note.publishedAt)}</p>
-                  <h3>{note.title}</h3>
-                  <small>{note.readingTime} {dictionary.home.minRead}</small>
-                </div>
-              </Link>
-            ))}
+            {notes.map((note, index) => {
+              const noteHref = note.href ? `${note.href.replace(/\/?$/, "/")}` : `/notes/${note.slug}/`;
+              return (
+                <Link href={noteHref} key={note.slug}>
+                  <span>0{index + 1}</span>
+                  <div dir={isAr ? TECH_DIR : undefined}>
+                    <p>{note.category} / {formatDate(note.publishedAt)}</p>
+                    <h3>{note.title}</h3>
+                    <small>{note.readingTime} {dictionary.home.minRead}</small>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
           <aside className="prompt-panel">
             <p className="eyebrow">{dictionary.home.promptEyebrow}</p>
@@ -195,6 +201,7 @@ export function HomePageView({ locale }: { locale: Locale }) {
             <Link className="btn-secondary" href="/prompts/">{dictionary.home.browsePrompts}</Link>
           </aside>
         </div>
+        <Link className="text-link" href={`${prefix}/notes/`}>{dictionary.home.browseNotes}</Link>
       </section>
 
       <section className="home-method shell">

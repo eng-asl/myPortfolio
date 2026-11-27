@@ -34,7 +34,7 @@ export function getSecurityNote(folderSlug: string, noteSlug: string): SecurityN
 export function getSecurityNotesAsPostSummaries(): Post[] {
   return getAllSecurityNotes().map((note) => ({
     slug: `security-${note.folderSlug}-${note.slug}`,
-    href: `/notes/security/${note.folderSlug}/${note.slug}`,
+    href: `/notes/security/${note.folderSlug}/${note.slug}/`,
     title: `${note.folderTitle} / ${note.title}`,
     summary: note.summary,
     category: "Cybersecurity",
