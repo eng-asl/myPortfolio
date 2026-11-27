@@ -21,7 +21,7 @@
 
 - [Security Field Notes](https://eng-asl.com/notes/security/): Structured cybersecurity reconnaissance, hardening, and protocol notes.
 - [Footprinting folder](https://eng-asl.com/notes/security/footprinting/): Service and protocol reconnaissance notes covering banners, default ports, configuration hardening, anonymous access, and enumeration techniques.
-  - [FTP and vsFTPd Footprinting](https://eng-asl.com/notes/security/footprinting/ftp/) ([Markdown version](https://eng-asl.com/notes/security/footprinting/ftp.md)): FTP fundamentals, server configuration, security considerations, and service enumeration.
+  - [FTP Footprinting](https://eng-asl.com/notes/security/footprinting/ftp/) ([Markdown version](https://eng-asl.com/notes/security/footprinting/ftp.md)): Essential FTP fundamentals, Linux server configuration with vsFTPd, and practical footprinting and enumeration techniques.
 - [Engineering Field Notes: Methods and Tests](https://eng-asl.com/notes/welcome-to-field-notes/) ([Markdown version](https://eng-asl.com/notes/welcome-to-field-notes.md)): How I document embedded systems, Linux, cybersecurity, Flutter, and AI work so another engineer can reproduce the result.
 
 ## Public projects

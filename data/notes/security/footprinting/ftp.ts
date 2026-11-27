@@ -4,9 +4,9 @@ export const ftpNote: SecurityNoteEntry = {
   slug: "ftp",
   folderSlug: "footprinting",
   folderTitle: "Footprinting",
-  title: "FTP and vsFTPd Footprinting",
+  title: "FTP Footprinting",
   summary:
-    "FTP fundamentals, server configuration, security considerations, and service enumeration.",
+    "Essential FTP fundamentals, Linux server configuration with vsFTPd, and practical footprinting and enumeration techniques.",
   publishedAt: "2026-11-27",
   updatedAt: "2026-11-27",
   difficulty: "Core Service",
@@ -226,9 +226,13 @@ export const ftpNote: SecurityNoteEntry = {
       shortTitle: "How FTP Works",
       title: "How FTP Works",
       intro:
-        "FTP (File Transfer Protocol) is an application-layer protocol in the TCP/IP stack (alongside HTTP and POP) used to transfer files between a client and a server over TCP. Unlike single-connection protocols, FTP separates commands and file transfers into two TCP connections.",
+        "FTP (File Transfer Protocol) is an application-layer protocol in the TCP/IP stack (alongside HTTP and POP) used to transfer files between a client and a server over TCP.",
       diagramIds: ["ftp-two-channels"],
       blocks: [
+        {
+          type: "paragraph",
+          text: "Unlike single-connection protocols, FTP separates commands and file transfers across two distinct TCP connections."
+        },
         {
           type: "comparison-table",
           id: "tbl-ftp-channels",
@@ -241,7 +245,7 @@ export const ftpNote: SecurityNoteEntry = {
               cells: [
                 "Data Channel",
                 "Files and directory listings.",
-                "Traditionally TCP 20 as the server source port in Active mode (depending on configuration), or a negotiated server port in Passive mode."
+                "TCP 20 as the traditional Active mode source port (depending on configuration), or a negotiated server port in Passive mode."
               ]
             }
           ]
@@ -250,17 +254,8 @@ export const ftpNote: SecurityNoteEntry = {
           type: "diagram-embed",
           diagramIds: ["ftp-two-channels"],
           layout: "single",
-          hideSummary: true
-        },
-        {
-          type: "context-links",
-          links: [
-            {
-              label: "View Summary Diagram",
-              actionKind: "view-diagram",
-              overviewSheet: true
-            }
-          ]
+          hideSummary: true,
+          disableZoom: true
         },
         {
           type: "subheading",

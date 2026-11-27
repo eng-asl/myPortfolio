@@ -170,6 +170,7 @@ export type NoteContentBlock =
       diagramIds: string[];
       layout?: "single" | "pair";
       hideSummary?: boolean;
+      disableZoom?: boolean;
       caption?: string;
     }
   | {

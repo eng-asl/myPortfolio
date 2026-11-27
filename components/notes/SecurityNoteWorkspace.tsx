@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import type {
   DiagramSlot,
-  InspectorEntry,
   NoteActionKind,
   NoteContentBlock,
   NotePart,
@@ -64,7 +63,6 @@ function renderActionIcon(actionKind?: NoteActionKind) {
 }
 
 export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
-  const [showQuickRef, setShowQuickRef] = useState<boolean>(false);
   const [activeInspectorId, setActiveInspectorId] = useState<string | null>(null);
   const [previewDiagram, setPreviewDiagram] = useState<DiagramSlot | null>(null);
   const [floatingPos, setFloatingPos] = useState<NoteWindowPosition | undefined>(undefined);
@@ -204,15 +202,6 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
     }
   };
 
-  const groupedInspectorEntries = useMemo(() => {
-    const groups: Record<string, InspectorEntry[]> = {};
-    for (const entry of Object.values(note.inspectors)) {
-      if (!groups[entry.category]) groups[entry.category] = [];
-      groups[entry.category].push(entry);
-    }
-    return Object.entries(groups);
-  }, [note.inspectors]);
-
   const renderSubSection = (sub: NoteSubSection) => (
     <div key={sub.id} className={styles.subSectionBlock}>
       <h3 id={slugifyHeading(sub.title)} className={styles.docSubheading}>
@@ -301,7 +290,9 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
                   diagram={diagram}
                   inspectors={note.inspectors}
                   onInspectTerm={(id) => openInspector(id)}
-                  onZoomDiagram={(item, ev) => openDiagramPreview(item, ev)}
+                  onZoomDiagram={
+                    block.disableZoom ? undefined : (item, ev) => openDiagramPreview(item, ev)
+                  }
                   compact={isPair}
                   hideSummary={Boolean(block.hideSummary)}
                   sizes={
@@ -679,39 +670,10 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
               </>
             ) : null}
             <span aria-hidden="true">/</span>
-            <span>{note.ports}</span>
-            <span aria-hidden="true">/</span>
-            <span>{note.daemon}</span>
-            <span aria-hidden="true">/</span>
             <span>{note.readingTime} min read</span>
           </div>
 
           <div className={styles.docActionRow}>
-            <button
-              type="button"
-              className={styles.contextBtn}
-              onClick={openFullOverviewSheet}
-              data-testid="open-full-sheet-btn"
-            >
-              <Maximize2 size={13} aria-hidden="true" />
-              <span>View Complete Overview Diagram</span>
-            </button>
-
-            <button
-              type="button"
-              className={styles.contextBtn}
-              aria-expanded={showQuickRef}
-              onClick={() => setShowQuickRef((v) => !v)}
-              data-testid="toggle-quick-ref-btn"
-            >
-              <BookOpen size={13} aria-hidden="true" />
-              <span>
-                {showQuickRef
-                  ? "Hide extended reference index"
-                  : `Extended reference index (${Object.keys(note.inspectors).length})`}
-              </span>
-            </button>
-
             <a
               href={`/notes/security/${note.folderSlug}/${note.slug}.md`}
               type="text/markdown"
@@ -723,40 +685,6 @@ export function SecurityNoteWorkspace({ note }: SecurityNoteWorkspaceProps) {
             </a>
           </div>
         </header>
-
-        {showQuickRef ? (
-          <section className={styles.quickRefDrawer} aria-label="Extended reference index">
-            <div className={styles.quickRefHeader}>
-              <p>Select any topic or extended procedure to open it in a floating reference window.</p>
-              <button
-                type="button"
-                className={styles.contextBtn}
-                onClick={() => setShowQuickRef(false)}
-              >
-                Close index
-              </button>
-            </div>
-            <div className={styles.quickRefGroups}>
-              {groupedInspectorEntries.map(([category, items]) => (
-                <div key={category} className={styles.quickRefGroup}>
-                  <h3>{category}</h3>
-                  <div className={styles.quickRefLinks}>
-                    {items.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        className={styles.contextBtn}
-                        onClick={(e) => openInspector(item.id, e)}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : null}
 
         <div className={styles.docLayout}>
           <NoteTableOfContents items={tocItems} />

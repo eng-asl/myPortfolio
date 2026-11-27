@@ -1,6 +1,6 @@
-# FTP and vsFTPd Footprinting
+# FTP Footprinting
 
-> FTP fundamentals, server configuration, security considerations, and service enumeration.
+> Essential FTP fundamentals, Linux server configuration with vsFTPd, and practical footprinting and enumeration techniques.
 
 - **Author:** [Ahmed Ibrahim Asl (ASL)](https://eng-asl.com/about/)
 - **Canonical URL:** https://eng-asl.com/notes/security/footprinting/ftp/
@@ -14,12 +14,14 @@
 
 ## How FTP Works
 
-FTP (File Transfer Protocol) is an application-layer protocol in the TCP/IP stack (alongside HTTP and POP) used to transfer files between a client and a server over TCP. Unlike single-connection protocols, FTP separates commands and file transfers into two TCP connections.
+FTP (File Transfer Protocol) is an application-layer protocol in the TCP/IP stack (alongside HTTP and POP) used to transfer files between a client and a server over TCP.
+
+Unlike single-connection protocols, FTP separates commands and file transfers across two distinct TCP connections.
 
 | Channel | Purpose | Port |
 | --- | --- | --- |
 | Control Channel | Commands and server responses. | TCP 21 by default. |
-| Data Channel | Files and directory listings. | Traditionally TCP 20 as the server source port in Active mode (depending on configuration), or a negotiated server port in Passive mode. |
+| Data Channel | Files and directory listings. | TCP 20 as the traditional Active mode source port (depending on configuration), or a negotiated server port in Passive mode. |
 
 #### Diagram: FTP Dual TCP Channels
 
@@ -32,12 +34,6 @@ Diagram description: Diagram distinguishing Client and FTP Server connected by C
 - Control Channel stays on TCP port 21 for commands (USER, PASS, LIST, STOR, RETR, PORT, PASV) and numeric status codes.
 - Data Channel opens a second TCP socket for file payloads and directory listings.
 - Both channels carry traffic bidirectionally once established.
-
-#### Diagram: Complete FTP Overview Visual Sheet
-
-Illustration URL: https://eng-asl.com/media/notes/security/footprinting/ftp/ftp-overview-full.jpg
-
-Combined visual summary of FTP Dual TCP Connections (Control TCP 21 and Data Channel), Active FTP (PORT), Passive FTP (PASV), authentication, cleartext transport, and anonymous access.
 
 ### Control Channel
 

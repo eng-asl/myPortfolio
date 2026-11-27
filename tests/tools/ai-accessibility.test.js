@@ -44,7 +44,7 @@ test("ftp.md includes complete Stage 2 reading-order text, tables, inline extend
   );
 
   const requiredTokens = [
-    "# FTP and vsFTPd Footprinting",
+    "# FTP Footprinting",
     "Ahmed Ibrahim Asl (ASL)",
     "https://eng-asl.com/notes/security/footprinting/ftp/",
     "https://eng-asl.com/notes/security/footprinting/ftp.md",
