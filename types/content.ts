@@ -14,6 +14,7 @@ export interface PostFrontmatter {
 
 export interface Post {
   slug: string;
+  href?: string;
   title: string;
   summary: string;
   category: string;
@@ -35,6 +36,7 @@ export interface WritingSeries {
   description: string;
   posts: Post[];
 }
+
 export interface PromptFrontmatter {
   title: string;
   summary: string;

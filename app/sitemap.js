@@ -1,14 +1,15 @@
 export const dynamic = "force-static";
 
 import { getAllPosts } from "@/lib/content";
+import { getAllSecurityFolders, getAllSecurityNotes } from "@/data/notes/security";
 import { siteConfig } from "@/lib/site";
 import { getAllTools } from "@/lib/tools";
 import { gradifySections } from "@/data/gradify-sections";
 import { toolCategories } from "@/data/tool-categories";
 import { projects } from "@/data/portfolio";
 import { groupWork } from "@/data/work-categories";
-import {satelliteCalculators} from '@/data/satellite-course';
-import {rfCalculators} from '@/data/rf-calculators';
+import { satelliteCalculators } from "@/data/satellite-course";
+import { rfCalculators } from "@/data/rf-calculators";
 
 const routes = [
   { pathname: "", changeFrequency: "weekly", priority: 1 },
@@ -38,6 +39,26 @@ export default function sitemap() {
     priority: 0.7
   }));
 
+  const securityFolders = [
+    {
+      url: `${siteConfig.url}/notes/security/`,
+      changeFrequency: "weekly",
+      priority: 0.85
+    },
+    ...getAllSecurityFolders().map((folder) => ({
+      url: `${siteConfig.url}/notes/security/${folder.slug}/`,
+      changeFrequency: "weekly",
+      priority: 0.8
+    }))
+  ];
+
+  const securityNotes = getAllSecurityNotes().map((note) => ({
+    url: `${siteConfig.url}/notes/security/${note.folderSlug}/${note.slug}/`,
+    lastModified: new Date(note.updatedAt || note.publishedAt),
+    changeFrequency: "monthly",
+    priority: 0.8
+  }));
+
   const calculators = getAllTools().map((tool) => ({
     url: `${siteConfig.url}/tools/${tool.slug}/`,
     changeFrequency: "yearly",
@@ -45,7 +66,7 @@ export default function sitemap() {
   }));
 
   const gradify = ["", ...gradifySections.map(section => `/${section.slug}`)].map(path => ({ url: `${siteConfig.url}/tools/gradify${path}/`, changeFrequency: "monthly", priority: 0.7 }));
-  const categories = toolCategories.map(category => ({url: `${siteConfig.url}/tools/category/${category.slug}/`, changeFrequency: "monthly", priority: 0.7}));
+  const categories = toolCategories.map(category => ({ url: `${siteConfig.url}/tools/category/${category.slug}/`, changeFrequency: "monthly", priority: 0.7 }));
   const work = groupWork(projects).flatMap(group => [
     { url: `${siteConfig.url}/work/${group.id}/`, changeFrequency: "monthly", priority: 0.8 },
     ...group.projects.map(project => ({
@@ -55,13 +76,13 @@ export default function sitemap() {
     }))
   ]);
   // Keep only canonical, published routes. Omit lastModified when no reliable date exists.
-  const satellite=[...satelliteCalculators.map(tool=>({url:`${siteConfig.url}/tools/satellite/${tool.slug}/`,changeFrequency:'monthly',priority:0.7}))];
-  const rf=[...rfCalculators.map(tool=>({url:`${siteConfig.url}/tools/rf/${tool.slug}/`,changeFrequency:'monthly',priority:0.7}))];
-  const arabicRoutes=[
+  const satellite = [...satelliteCalculators.map(tool => ({ url: `${siteConfig.url}/tools/satellite/${tool.slug}/`, changeFrequency: "monthly", priority: 0.7 }))];
+  const rf = [...rfCalculators.map(tool => ({ url: `${siteConfig.url}/tools/rf/${tool.slug}/`, changeFrequency: "monthly", priority: 0.7 }))];
+  const arabicRoutes = [
     "/ar/", "/ar/about/", "/ar/contact/", "/ar/work/", "/ar/tools/", "/ar/notes/",
-    ...toolCategories.map(category=>`/ar/tools/category/${category.slug}/`),
-    ...satelliteCalculators.map(tool=>`/ar/tools/satellite/${tool.slug}/`),
-    ...rfCalculators.map(tool=>`/ar/tools/rf/${tool.slug}/`)
-  ].map(pathname=>({url:`${siteConfig.url}${pathname}`,changeFrequency:'monthly',priority:0.65}));
-  return [...new Map([...pages, ...calculators, ...posts, ...gradify, ...categories, ...work,...satellite,...rf,...arabicRoutes].map(entry => [entry.url, entry])).values()];
+    ...toolCategories.map(category => `/ar/tools/category/${category.slug}/`),
+    ...satelliteCalculators.map(tool => `/ar/tools/satellite/${tool.slug}/`),
+    ...rfCalculators.map(tool => `/ar/tools/rf/${tool.slug}/`)
+  ].map(pathname => ({ url: `${siteConfig.url}${pathname}`, changeFrequency: "monthly", priority: 0.65 }));
+  return [...new Map([...pages, ...calculators, ...posts, ...securityFolders, ...securityNotes, ...gradify, ...categories, ...work, ...satellite, ...rf, ...arabicRoutes].map(entry => [entry.url, entry])).values()];
 }

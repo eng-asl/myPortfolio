@@ -2725,6 +2725,176 @@ export const publicImageManifest: Record<string, PublicImageFamily> = {
       ]
     }
   },
+  "/media/notes/security/footprinting/ftp/ftp-active-mode.png": {
+    "source": "/media/notes/security/footprinting/ftp/ftp-active-mode.png",
+    "width": 498,
+    "height": 310,
+    "avif": [],
+    "webp": [
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-active-mode/320.webp",
+        "width": 320,
+        "bytes": 62244
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-active-mode/480.webp",
+        "width": 480,
+        "bytes": 123610
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-active-mode/498.webp",
+        "width": 498,
+        "bytes": 115726
+      }
+    ],
+    "role": "gallery-evidence",
+    "sizesPreset": "article"
+  },
+  "/media/notes/security/footprinting/ftp/ftp-overview-full.jpg": {
+    "source": "/media/notes/security/footprinting/ftp/ftp-overview-full.jpg",
+    "width": 1024,
+    "height": 768,
+    "avif": [],
+    "webp": [
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-overview-full/320.webp",
+        "width": 320,
+        "bytes": 87252
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-overview-full/480.webp",
+        "width": 480,
+        "bytes": 184342
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-overview-full/640.webp",
+        "width": 640,
+        "bytes": 298520
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-overview-full/768.webp",
+        "width": 768,
+        "bytes": 406214
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-overview-full/960.webp",
+        "width": 960,
+        "bytes": 611818
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-overview-full/1024.webp",
+        "width": 1024,
+        "bytes": 590198
+      }
+    ],
+    "role": "gallery-evidence",
+    "sizesPreset": "article"
+  },
+  "/media/notes/security/footprinting/ftp/ftp-passive-mode.png": {
+    "source": "/media/notes/security/footprinting/ftp/ftp-passive-mode.png",
+    "width": 505,
+    "height": 310,
+    "avif": [],
+    "webp": [
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-passive-mode/320.webp",
+        "width": 320,
+        "bytes": 63782
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-passive-mode/480.webp",
+        "width": 480,
+        "bytes": 124868
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-passive-mode/505.webp",
+        "width": 505,
+        "bytes": 122962
+      }
+    ],
+    "role": "gallery-evidence",
+    "sizesPreset": "article"
+  },
+  "/media/notes/security/footprinting/ftp/ftp-quick-facts.png": {
+    "source": "/media/notes/security/footprinting/ftp/ftp-quick-facts.png",
+    "width": 1000,
+    "height": 74,
+    "avif": [],
+    "webp": [
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-quick-facts/320.webp",
+        "width": 320,
+        "bytes": 9218
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-quick-facts/480.webp",
+        "width": 480,
+        "bytes": 18346
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-quick-facts/640.webp",
+        "width": 640,
+        "bytes": 29222
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-quick-facts/768.webp",
+        "width": 768,
+        "bytes": 40620
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-quick-facts/960.webp",
+        "width": 960,
+        "bytes": 59184
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-quick-facts/1000.webp",
+        "width": 1000,
+        "bytes": 57822
+      }
+    ],
+    "role": "gallery-evidence",
+    "sizesPreset": "article"
+  },
+  "/media/notes/security/footprinting/ftp/ftp-two-channels.png": {
+    "source": "/media/notes/security/footprinting/ftp/ftp-two-channels.png",
+    "width": 1000,
+    "height": 224,
+    "avif": [],
+    "webp": [
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-two-channels/320.webp",
+        "width": 320,
+        "bytes": 25720
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-two-channels/480.webp",
+        "width": 480,
+        "bytes": 52602
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-two-channels/640.webp",
+        "width": 640,
+        "bytes": 85352
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-two-channels/768.webp",
+        "width": 768,
+        "bytes": 118528
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-two-channels/960.webp",
+        "width": 960,
+        "bytes": 177838
+      },
+      {
+        "src": "/media/generated/responsive/media/notes/security/footprinting/ftp/ftp-two-channels/1000.webp",
+        "width": 1000,
+        "bytes": 167942
+      }
+    ],
+    "role": "gallery-evidence",
+    "sizesPreset": "article"
+  },
   "/media/optimized/profile-ahmed.webp": {
     "source": "/media/optimized/profile-ahmed.webp",
     "width": 960,

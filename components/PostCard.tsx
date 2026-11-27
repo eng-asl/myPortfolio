@@ -14,7 +14,7 @@ export function PostCard({ post, index, featured = false }: PostCardProps) {
   return (
     <Link
       className={`post-card card-link ${featured ? "featured" : ""}`}
-      href={`/notes/${post.slug}`}
+      href={post.href || `/notes/${post.slug}`}
     >
       <IndexedBadge index={index + 1} />
       <div className="post-main">

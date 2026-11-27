@@ -8,7 +8,9 @@ const libraryDirectory = path.join(process.cwd(), "content", "library");
 
 function normalizeLibraryItem(fileName: string): LibraryItem {
   const slug = fileName.replace(/\.md$/, "");
-  const source = fs.readFileSync(path.join(libraryDirectory, fileName), "utf8");
+  const source = fs
+    .readFileSync(path.join(libraryDirectory, fileName), "utf8")
+    .replace(/\r\n?/g, "\n");
   const { data, content } = parseFrontmatter(source);
 
   return {

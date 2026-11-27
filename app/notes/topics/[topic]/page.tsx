@@ -1,6 +1,6 @@
 import React from "react";
 import { notFound } from "next/navigation";
-import { getAllPosts } from "@/lib/content";
+import { getAllPosts, toPostSummary } from "@/lib/content";
 import { WritingIndex } from "@/components/WritingIndex";
 import { createPageMetadata } from "@/lib/seo";
 
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: { params: Promise<{ topic: st
 
 export default async function TopicPage({ params }: { params: Promise<{ topic: string }> }) {
   const { topic } = await params;
-  const allPosts = getAllPosts();
+  const allPosts = getAllPosts().map(toPostSummary);
   const posts = allPosts.filter(p => 
     p.tags.some(t => t.toLowerCase().replace(/\s+/g, "-") === topic)
   );

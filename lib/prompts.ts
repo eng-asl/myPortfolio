@@ -8,7 +8,9 @@ const promptsDirectory = path.join(process.cwd(), "content", "prompts");
 
 function normalizePrompt(fileName: string): PromptItem {
   const slug = fileName.replace(/\.md$/, "");
-  const source = fs.readFileSync(path.join(promptsDirectory, fileName), "utf8");
+  const source = fs
+    .readFileSync(path.join(promptsDirectory, fileName), "utf8")
+    .replace(/\r\n?/g, "\n");
   const { data, content } = parseFrontmatter(source);
 
   return {

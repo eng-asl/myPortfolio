@@ -40,7 +40,9 @@ function sanitizeHtmlOutput(rawHtml: string): string {
 
 function normalizePost(fileName: string): Post {
   const slug = fileName.replace(/\.md$/, "");
-  const source = fs.readFileSync(path.join(writingDirectory, fileName), "utf8");
+  const source = fs
+    .readFileSync(path.join(writingDirectory, fileName), "utf8")
+    .replace(/\r\n?/g, "\n");
   const { data, content } = parseFrontmatter(source);
   const words = content.trim().split(/\s+/).filter(Boolean).length;
 
@@ -59,6 +61,14 @@ function normalizePost(fileName: string): Post {
     content,
     html: "",
     readingTime: Math.max(1, Math.ceil(words / 220))
+  };
+}
+
+export function toPostSummary(post: Post): Post {
+  return {
+    ...post,
+    content: "",
+    html: ""
   };
 }
 

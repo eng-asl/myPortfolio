@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-11-19T14:57:39.019Z",
+  "generatedAt": "2026-11-27T02:52:56.070Z",
   "roleCounts": {
-    "project-cover": 19,
+    "project-cover": 20,
     "portrait": 4,
     "decorative": 1,
     "tool-cover": 70,
+    "gallery-evidence": 52,
     "tutorial-cover": 3,
-    "gallery-evidence": 43,
     "interface-screenshot": 17,
     "social": 2
   },
-  "referenced": 159,
+  "referenced": 169,
   "unreferenced": [
     "/brand/portrait-asl.png",
     "/images/Human Follower.jpg",
@@ -50,6 +50,7 @@
     "/media/generated/project-security-lock-480.webp",
     "/media/generated/project-security-lock-960.webp",
     "/media/generated/project-security-lock.webp",
+    "/media/notes/security/footprinting/ftp/ftp-chroot-sandbox-ref.png",
     "/media/optimized/project-agribot.webp",
     "/media/optimized/project-lock-diagram.webp",
     "/media/optimized/project-lock-hardware.webp",

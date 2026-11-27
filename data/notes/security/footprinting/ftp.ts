@@ -1,0 +1,1597 @@
+import type { SecurityNoteEntry } from "@/types/security-notes";
+
+export const ftpNote: SecurityNoteEntry = {
+  slug: "ftp",
+  folderSlug: "footprinting",
+  folderTitle: "Footprinting",
+  title: "FTP (File Transfer Protocol) & vsFTPd",
+  summary:
+    "Structured footprinting field notes covering FTP channels, Active vs Passive modes, vsFTPd configuration, access control, anonymous enumeration, and client diagnostics.",
+  publishedAt: "2026-11-27",
+  updatedAt: "2026-11-27",
+  difficulty: "Core Service",
+  readingTime: 9,
+  tags: ["Security", "Footprinting", "FTP", "vsFTPd", "Linux", "Enumeration"],
+  protocolBadge: "TCP/IP Application Layer",
+  ports: "TCP 21 (Control) / TCP 20 or PASV (Data)",
+  daemon: "vsFTPd (/etc/vsftpd.conf)",
+  overviewSheetImage: "/media/notes/security/footprinting/ftp/ftp-overview-full.jpg",
+  quickFacts: [
+    {
+      label: "Capabilities",
+      value: "Upload, download, list, organize, and delete files.",
+      inspectorId: "ftp-protocol"
+    },
+    {
+      label: "Authentication",
+      value: "Usually username and password via PAM or local users.",
+      inspectorId: "pam_service_name"
+    },
+    {
+      label: "Security",
+      value: "Standard FTP is cleartext; FTPS wraps it in TLS.",
+      inspectorId: "ftp-ftps-sftp"
+    },
+    {
+      label: "Anonymous FTP",
+      value: "Public access with limited permissions if enabled.",
+      inspectorId: "anonymous-access-concept"
+    }
+  ],
+  diagrams: [
+    {
+      id: "ftp-two-channels",
+      figLabel: "FIG 01",
+      partId: "overview",
+      title: "Two TCP Connections: Control & Data",
+      summary:
+        "FTP separates commands and status codes (TCP port 21) from file transfers and directory listings (separate Data Channel). Both channels are bidirectional after establishment.",
+      keyPoints: [
+        "Control Channel on TCP port 21 handles USER, PASS, LIST, STOR, RETR, PORT, PASV.",
+        "Data Channel opens a separate TCP connection for payloads and directory listings.",
+        "Transfers may resume if both client and server support restart markers."
+      ],
+      imageSrc: "/media/notes/security/footprinting/ftp/ftp-two-channels.png",
+      swapPath: "public/media/notes/security/footprinting/ftp/ftp-two-channels.png",
+      alt: "Diagram showing Client and FTP Server connected by Control Channel on TCP port 21 and a separate Data Channel with example commands USER, PASS, LIST, STOR, RETR, PORT, PASV.",
+      aspectRatio: "1000 / 224",
+      relatedInspectorIds: ["ftp-protocol", "connect_from_port_20"]
+    },
+    {
+      id: "ftp-active-mode",
+      figLabel: "FIG 02",
+      partId: "overview",
+      title: "Active FTP Connection Flow (PORT)",
+      summary:
+        "Client opens TCP 21 and sends PORT (e.g. 51001). The server then initiates the data connection back from TCP port 20 to the client port.",
+      keyPoints: [
+        "1. Client initiates control connection to server port 21.",
+        "2. Client sends PORT command telling server to connect to client port 51001.",
+        "3. Server initiates data connection from port 20 to client port 51001.",
+        "Client-side firewall or NAT may block the incoming server data connection."
+      ],
+      imageSrc: "/media/notes/security/footprinting/ftp/ftp-active-mode.png",
+      swapPath: "public/media/notes/security/footprinting/ftp/ftp-active-mode.png",
+      alt: "Active FTP flow diagram showing client port 51000 connecting to server port 21, PORT command, and server port 20 initiating the data connection back to client port 51001.",
+      aspectRatio: "498 / 310",
+      relatedInspectorIds: ["active-ftp", "connect_from_port_20"]
+    },
+    {
+      id: "ftp-passive-mode",
+      figLabel: "FIG 03",
+      partId: "overview",
+      title: "Passive FTP Connection Flow (PASV)",
+      summary:
+        "Client sends PASV over port 21, server replies with a listening port (e.g. 52000), and the client initiates both the control and data connections.",
+      keyPoints: [
+        "1. Client initiates control connection to server port 21.",
+        "2. Client sends PASV command over the control channel.",
+        "3. Server replies with a listening data port (for example 52000).",
+        "4. Client initiates data connection to server port 52000 (NAT and firewall friendly)."
+      ],
+      imageSrc: "/media/notes/security/footprinting/ftp/ftp-passive-mode.png",
+      swapPath: "public/media/notes/security/footprinting/ftp/ftp-passive-mode.png",
+      alt: "Passive FTP flow diagram showing client connecting to port 21, sending PASV, receiving port 52000, and client port 51002 initiating the data connection to server port 52000.",
+      aspectRatio: "505 / 310",
+      relatedInspectorIds: ["passive-ftp", "code-200"]
+    },
+    {
+      id: "ftp-quick-facts",
+      figLabel: "FIG 04",
+      partId: "setup",
+      title: "FTP Capabilities & Daemon Role",
+      summary:
+        "Summary of core FTP operations, credential handling, cleartext exposure, and when vsFTPd runs as a background daemon.",
+      keyPoints: [
+        "FTP is the protocol specification; vsFTPd is the Linux background daemon implementing it.",
+        "Upload, download, list, organize, and delete operations depend on config and filesystem permissions.",
+        "Configuration lives in /etc/vsftpd.conf; full options live in man vsftpd.conf."
+      ],
+      imageSrc: "/media/notes/security/footprinting/ftp/ftp-quick-facts.png",
+      swapPath: "public/media/notes/security/footprinting/ftp/ftp-quick-facts.png",
+      alt: "Summary cards for FTP capabilities, username/password authentication, cleartext security, and anonymous FTP.",
+      aspectRatio: "1000 / 74",
+      relatedInspectorIds: ["vsftpd", "daemon-concept", "vsftpd-conf"]
+    },
+    {
+      id: "ftp-chroot-sandbox",
+      figLabel: "FIG 05",
+      partId: "config",
+      subSectionId: "auth-access",
+      title: "FTP Client Incoming Commands & Sandbox Isolation",
+      summary:
+        "Pre-login command handlers run inside an empty sandbox directory (/var/run/vsftpd/empty) isolated from /etc, /home, and /var system files.",
+      keyPoints: [
+        "FTP Client sends incoming commands before full authentication completes.",
+        "vsFTPd isolates pre-login worker processes in /var/run/vsftpd/empty.",
+        "Blocked boundary prevents compromised pre-login processes from reading /etc, /home, or /var.",
+        "Not used for sharing, uploading, or downloading user files."
+      ],
+      placeholderKind: "chroot-sandbox",
+      swapPath: "public/media/notes/security/footprinting/ftp/ftp-chroot-sandbox.png",
+      alt: "Blueprint diagram showing FTP Client incoming commands entering a Linux Server where the vsFTPd process is isolated inside a green dashed Sandbox at /var/run/vsftpd/empty, blocked from /etc, /home, and /var.",
+      relatedInspectorIds: ["secure_chroot_dir", "least-privilege"]
+    },
+    {
+      id: "ftp-protocol-security",
+      figLabel: "FIG 06",
+      partId: "config",
+      subSectionId: "encryption",
+      title: "Transport Comparison: FTP vs FTPS vs SFTP",
+      summary:
+        "Standard FTP transmits credentials and file payloads in cleartext, whereas FTPS adds TLS over FTP and SFTP tunnels over SSH.",
+      keyPoints: [
+        "FTP: Plain text credentials and data, exposed to passive network sniffing.",
+        "FTPS: SSL/TLS encryption configured via ssl_enable, rsa_cert_file, and rsa_private_key_file.",
+        "SFTP: SSH subsystem encryption (separate protocol from FTP)."
+      ],
+      placeholderKind: "protocol-security",
+      swapPath: "public/media/notes/security/footprinting/ftp/ftp-protocol-security.png",
+      alt: "Protocol comparison schematic contrasting plain text FTP, TLS-encrypted FTPS, and SSH-encrypted SFTP.",
+      relatedInspectorIds: ["ftp-ftps-sftp", "ssl_enable"]
+    },
+    {
+      id: "ftp-anon-enum",
+      figLabel: "FIG 07",
+      partId: "enumeration",
+      title: "Anonymous Enumeration & Status Code Sequence",
+      summary:
+        "Footprinting flow from banner capture (220) through anonymous login (230) and directory listing (150 / 226).",
+      keyPoints: [
+        "220 Service banner often leaks server software, version, or custom organization labels.",
+        "230 Login successful on anonymous access permits immediate directory reconnaissance.",
+        "150 opens the Data Channel for ls output; 226 confirms transfer completion.",
+        "530 rejects unauthorized users or accounts blocked in /etc/ftpusers."
+      ],
+      placeholderKind: "anon-enum",
+      swapPath: "public/media/notes/security/footprinting/ftp/ftp-anon-enum.png",
+      alt: "Sequence diagram illustrating TCP 21 connection, 220 banner, anonymous login 230, and ls directory listing 150 to 226.",
+      relatedInspectorIds: ["code-220", "code-230", "code-150", "code-226", "code-530"]
+    },
+    {
+      id: "ftp-diagnostics",
+      figLabel: "FIG 08",
+      partId: "diagnostics",
+      title: "Client Visibility vs Server Status (status, debug, trace, STAT)",
+      summary:
+        "Distinguishes local FTP client diagnostics (status, debug, trace) from server-queried protocol status (quote STAT).",
+      keyPoints: [
+        "status prints local client connection flags, stream mode, binary type, and PORT usage.",
+        "debug and trace raise client-side visibility without forcing extra server disclosures.",
+        "quote STAT sends an FTP protocol STAT request directly to the remote server."
+      ],
+      placeholderKind: "diagnostics",
+      swapPath: "public/media/notes/security/footprinting/ftp/ftp-diagnostics.png",
+      alt: "Diagram separating local FTP client visibility commands (status, debug, trace) from remote server query command (quote STAT).",
+      relatedInspectorIds: ["cmd-status", "cmd-stat", "cmd-debug", "cmd-trace"]
+    }
+  ],
+  parts: [
+    {
+      id: "overview",
+      indexLabel: "00",
+      shortTitle: "Overview",
+      title: "Protocol Architecture & Connection Modes",
+      intro:
+        "FTP is one of the oldest Internet protocols and runs at the application layer of the TCP/IP stack alongside HTTP and POP. Unlike single-socket protocols, it splits control signaling and data transfer across two TCP connections.",
+      diagramIds: ["ftp-two-channels", "ftp-active-mode", "ftp-passive-mode"],
+      blocks: [
+        {
+          type: "steps-grid",
+          cards: [
+            {
+              code: "CH 01",
+              title: "Control Channel (TCP 21)",
+              body: "Carries commands such as USER, PASS, LIST, STOR, RETR, PORT, PASV, and numeric status codes. Remains open across the session.",
+              inspectorId: "ftp-protocol"
+            },
+            {
+              code: "CH 02",
+              title: "Data Channel (Separate TCP)",
+              body: "Dedicated TCP connection opened per directory listing or file transfer. Both channels are bidirectional once established.",
+              inspectorId: "ftp-protocol"
+            },
+            {
+              code: "PORT",
+              title: "Active Mode (Server -> Client)",
+              body: "Client sends PORT; server initiates the data socket from TCP port 20 to the client port. Client firewalls or NAT often block it.",
+              inspectorId: "active-ftp"
+            },
+            {
+              code: "PASV",
+              title: "Passive Mode (Client -> Server)",
+              body: "Client sends PASV; server returns an ephemeral listening port (e.g. 52000) so the client initiates both sockets cleanly through NAT.",
+              inspectorId: "passive-ftp"
+            }
+          ]
+        },
+        {
+          type: "term-chips",
+          title: "Click any protocol concept or command to open the Floating Inspector",
+          chipIds: [
+            "ftp-protocol",
+            "active-ftp",
+            "passive-ftp",
+            "vsftpd",
+            "ftp-ftps-sftp"
+          ]
+        },
+        {
+          type: "callout",
+          tone: "info",
+          title: "Reading the mode diagrams",
+          body: [
+            "Arrows in Active and Passive diagrams indicate which side initiates the TCP connection, not the direction of file transfer. Transfers may also resume when supported by both endpoints."
+          ]
+        }
+      ]
+    },
+    {
+      id: "setup",
+      indexLabel: "01",
+      shortTitle: "Setup",
+      title: "Part 1: vsFTPd Daemon & Configuration Files",
+      intro:
+        "FTP is a protocol specification, so a server needs software that implements it. On Linux, one of the most widely deployed servers is vsFTPd (Very Secure FTP Daemon).",
+      diagramIds: ["ftp-quick-facts", "ftp-two-channels"],
+      blocks: [
+        {
+          type: "paragraph",
+          text: "A daemon is a background program that runs continuously to provide a system service. On Debian and Ubuntu hosts, vsFTPd is installed directly via apt and controlled from a single primary configuration file.",
+          terms: [
+            { label: "vsFTPd", inspectorId: "vsftpd" },
+            { label: "Daemon", inspectorId: "daemon-concept" },
+            { label: "/etc/vsftpd.conf", inspectorId: "vsftpd-conf" }
+          ]
+        },
+        {
+          type: "terminal",
+          terminal: {
+            id: "term-install-vsftpd",
+            title: "Install vsFTPd on Linux",
+            environment: "LINUX",
+            copyCommand: "sudo apt install vsftpd",
+            caption: "Installs the Very Secure FTP Daemon package and registers the service.",
+            lines: [
+              {
+                kind: "command",
+                prompt: "$",
+                text: "sudo apt install vsftpd",
+                copyable: true
+              }
+            ]
+          }
+        },
+        {
+          type: "paragraph",
+          text: "The default configuration file is /etc/vsftpd.conf. It defines daemon networking, permissions, authentication modules, banners, logging, and TLS behavior."
+        },
+        {
+          type: "terminal",
+          terminal: {
+            id: "term-read-vsftpd-conf",
+            title: "Inspect Active Settings Without Comments",
+            environment: "LINUX",
+            copyCommand: 'cat /etc/vsftpd.conf | grep -v "#"',
+            caption: "Filters out comment lines so only active directives remain visible.",
+            lines: [
+              {
+                kind: "command",
+                prompt: "$",
+                text: 'cat /etc/vsftpd.conf | grep -v "#"',
+                copyable: true
+              }
+            ]
+          }
+        },
+        {
+          type: "callout",
+          tone: "info",
+          title: "Full directive reference",
+          body: [
+            "The default /etc/vsftpd.conf file does not list every possible directive. Use the built-in manual page to inspect all supported options and defaults."
+          ],
+          inspectorIds: ["vsftpd-conf"]
+        },
+        {
+          type: "terminal",
+          terminal: {
+            id: "term-man-vsftpd",
+            title: "Read the Complete Directive Manual",
+            environment: "LINUX",
+            copyCommand: "man vsftpd.conf",
+            lines: [
+              {
+                kind: "command",
+                prompt: "$",
+                text: "man vsftpd.conf",
+                copyable: true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      id: "config",
+      indexLabel: "02",
+      shortTitle: "Config",
+      title: "Part 2: vsFTPd Configuration Settings",
+      intro:
+        "Click any directive row to inspect its exact behavior, security impact, and file paths in the floating window without leaving your place.",
+      diagramIds: ["ftp-chroot-sandbox", "ftp-protocol-security"],
+      blocks: [
+        {
+          type: "sub-sections",
+          sections: [
+            {
+              id: "network",
+              label: "2.1 Network & Connection",
+              shortLabel: "2.1 Network",
+              title: "2.1 Network & Connection Settings",
+              intro:
+                "Controls whether vsFTPd runs standalone or on-demand via a superserver such as inetd, plus IPv6 listening and Active FTP source port behavior.",
+              diagramIds: ["ftp-active-mode", "ftp-two-channels"],
+              blocks: [
+                {
+                  type: "settings-table",
+                  id: "tbl-network-settings",
+                  rows: [
+                    {
+                      setting: "listen=NO",
+                      summary:
+                        "Controls standalone IPv4 listening. If both listen and listen_ipv6 are NO, inetd can launch vsFTPd on demand to save resources.",
+                      riskLevel: "info",
+                      inspectorId: "listen"
+                    },
+                    {
+                      setting: "listen_ipv6=YES",
+                      summary:
+                        "Allows vsFTPd to listen independently using an IPv6 socket (which commonly handles dual-stack IPv4 mapped connections on Linux).",
+                      riskLevel: "safe",
+                      inspectorId: "listen_ipv6"
+                    },
+                    {
+                      setting: "connect_from_port_20=YES",
+                      summary:
+                        "Uses server TCP port 20 as the source port for outgoing Data Connections in Active FTP mode.",
+                      riskLevel: "info",
+                      inspectorId: "connect_from_port_20"
+                    }
+                  ]
+                },
+                {
+                  type: "callout",
+                  tone: "warn",
+                  title: "Penetration Testing Note",
+                  body: [
+                    "Running vsFTPd on demand does not hide the FTP service from port scanning. Port 21 can still appear open because another service, such as inetd, is listening for connections.",
+                    "The purpose of this setting is resource management, not hiding the service."
+                  ],
+                  inspectorIds: ["listen"]
+                }
+              ]
+            },
+            {
+              id: "auth-access",
+              label: "2.2 Authentication & Access",
+              shortLabel: "2.2 Auth & Sandbox",
+              title: "2.2 Authentication & Access Control",
+              intro:
+                "Defines who may authenticate, which PAM rules validate credentials, and how unprivileged pre-login processes are isolated from system files.",
+              diagramIds: ["ftp-chroot-sandbox"],
+              blocks: [
+                {
+                  type: "settings-table",
+                  id: "tbl-auth-settings",
+                  rows: [
+                    {
+                      setting: "anonymous_enable=NO",
+                      summary:
+                        "Disables anonymous login. Clients must authenticate with an authorized account.",
+                      riskLevel: "safe",
+                      inspectorId: "anonymous_enable_no"
+                    },
+                    {
+                      setting: "local_enable=YES",
+                      summary:
+                        "Allows existing Linux system users to log in to the FTP service.",
+                      riskLevel: "info",
+                      inspectorId: "local_enable"
+                    },
+                    {
+                      setting: "pam_service_name=vsftpd",
+                      summary:
+                        "Selects /etc/pam.d/vsftpd for PAM authentication (also used by SSH and sudo).",
+                      riskLevel: "info",
+                      inspectorId: "pam_service_name"
+                    },
+                    {
+                      setting: "secure_chroot_dir=/var/run/vsftpd/empty",
+                      summary:
+                        "Empty restricted sandbox directory for pre-login worker processes that need no system file access.",
+                      riskLevel: "safe",
+                      inspectorId: "secure_chroot_dir"
+                    }
+                  ]
+                },
+                {
+                  type: "callout",
+                  tone: "ok",
+                  title: "Understanding secure_chroot_dir & Principle of Least Privilege",
+                  body: [
+                    "When a client connects to an FTP server, helper processes handle incoming commands before the user logs in. Because those processes do not need system file access, vsFTPd isolates them inside an empty directory and makes it their root directory.",
+                    "The isolated process has restricted filesystem access. If an attacker exploits a vulnerability in an isolated process, this sandbox helps block access to /etc, /home, and /var. This applies the Principle of Least Privilege.",
+                    "Note: /var/run/vsftpd/empty is not used for sharing, uploading, or downloading files."
+                  ],
+                  inspectorIds: ["secure_chroot_dir", "least-privilege"]
+                }
+              ]
+            },
+            {
+              id: "messages-logging",
+              label: "2.3 Messages, Time & Logging",
+              shortLabel: "2.3 Messages & Logs",
+              title: "2.3 Messages, Time & Logging",
+              intro:
+                "Controls welcome banners returned on code 220, per-directory notices, local timestamps, and file transfer audit logging.",
+              diagramIds: ["ftp-anon-enum"],
+              blocks: [
+                {
+                  type: "settings-table",
+                  id: "tbl-messages-settings",
+                  rows: [
+                    {
+                      setting: "dirmessage_enable=YES",
+                      summary:
+                        "Displays a message automatically when a user enters a configured directory.",
+                      riskLevel: "info",
+                      inspectorId: "dirmessage_enable"
+                    },
+                    {
+                      setting: "message_file=.message",
+                      summary:
+                        "Specifies the filename inside a directory that holds its entry message.",
+                      riskLevel: "info",
+                      inspectorId: "message_file"
+                    },
+                    {
+                      setting: "ftpd_banner=Welcome to FTP Server",
+                      summary:
+                        "Defines an inline welcome banner displayed when a client connects.",
+                      riskLevel: "info",
+                      inspectorId: "ftpd_banner"
+                    },
+                    {
+                      setting: "banner_file=/etc/ftp_banner.txt",
+                      summary:
+                        "Loads the welcome message from a file and overrides ftpd_banner if both are set.",
+                      riskLevel: "info",
+                      inspectorId: "banner_file"
+                    },
+                    {
+                      setting: "use_localtime=YES",
+                      summary:
+                        "Displays directory listing timestamps in the server local time instead of GMT.",
+                      riskLevel: "safe",
+                      inspectorId: "use_localtime"
+                    },
+                    {
+                      setting: "xferlog_enable=YES",
+                      summary:
+                        "Enables logging of file uploads and downloads for auditing.",
+                      riskLevel: "safe",
+                      inspectorId: "xferlog_enable"
+                    }
+                  ]
+                },
+                {
+                  type: "paragraph",
+                  text: "Both ftpd_banner and banner_file configure the same greeting, using either an inline string or an external text file."
+                },
+                {
+                  type: "terminal",
+                  terminal: {
+                    id: "term-banner-example",
+                    title: "Banner Greeting Returned to Client",
+                    environment: "BANNER",
+                    lines: [
+                      {
+                        kind: "response",
+                        text: "220 Welcome to FTP Server",
+                        statusTone: "ok"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              id: "encryption",
+              label: "2.4 Encryption & Security",
+              shortLabel: "2.4 Encryption",
+              title: "2.4 Encryption & Security",
+              intro:
+                "Standard FTP transfers credentials and data in plain text, making sessions vulnerable to passive network sniffing unless TLS encryption (FTPS) is enabled.",
+              diagramIds: ["ftp-protocol-security"],
+              blocks: [
+                {
+                  type: "settings-table",
+                  id: "tbl-encryption-settings",
+                  rows: [
+                    {
+                      setting: "ssl_enable=NO",
+                      summary:
+                        "Disables SSL/TLS encryption by default. Set to YES to enable encrypted FTP (FTPS).",
+                      riskLevel: "danger",
+                      inspectorId: "ssl_enable"
+                    },
+                    {
+                      setting: "rsa_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem",
+                      summary:
+                        "Specifies the path to the server X.509 TLS certificate used for FTPS.",
+                      riskLevel: "info",
+                      inspectorId: "rsa_cert_file"
+                    },
+                    {
+                      setting: "rsa_private_key_file=/etc/ssl/private/ssl-cert-snakeoil.key",
+                      summary:
+                        "Specifies the path to the private key matching the server TLS certificate.",
+                      riskLevel: "info",
+                      inspectorId: "rsa_private_key_file"
+                    }
+                  ]
+                },
+                {
+                  type: "comparison-table",
+                  id: "tbl-protocol-security",
+                  title: "Protocol Transport Security",
+                  columns: ["Protocol", "Security Mechanism", "Footprinting Implication"],
+                  rows: [
+                    {
+                      cells: [
+                        "FTP",
+                        "Plain text",
+                        "Credentials and transferred payloads can be captured on the wire."
+                      ],
+                      inspectorId: "ftp-ftps-sftp"
+                    },
+                    {
+                      cells: [
+                        "FTPS",
+                        "SSL/TLS encryption",
+                        "Protects FTP control/data channels when enforced on clients."
+                      ],
+                      inspectorId: "ssl_enable"
+                    },
+                    {
+                      cells: [
+                        "SFTP",
+                        "SSH encryption",
+                        "Runs as an SSH subsystem (usually TCP 22), distinct from FTP."
+                      ],
+                      inspectorId: "ftp-ftps-sftp"
+                    }
+                  ]
+                },
+                {
+                  type: "callout",
+                  tone: "warn",
+                  title: "Optional TLS vs Enforced TLS",
+                  body: [
+                    "Enabling TLS support does not necessarily force every client to use encryption. Additional configuration directives are needed to require encrypted logins and data channels."
+                  ],
+                  inspectorIds: ["ssl_enable", "ftp-ftps-sftp"]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "users",
+      indexLabel: "03",
+      shortTitle: "Users",
+      title: "Part 3: FTP Users & Access Control",
+      intro:
+        "Even when local_enable=YES permits Linux accounts to authenticate, /etc/ftpusers acts as an explicit denylist enforced by PAM/vsFTPd configuration.",
+      diagramIds: ["ftp-chroot-sandbox"],
+      blocks: [
+        {
+          type: "paragraph",
+          text: "The /etc/ftpusers file lists accounts that are explicitly blocked from logging in over FTP whenever the authentication stack enforces this list.",
+          terms: [
+            { label: "/etc/ftpusers", inspectorId: "etc-ftpusers" },
+            { label: "PAM (/etc/pam.d/vsftpd)", inspectorId: "pam_service_name" }
+          ]
+        },
+        {
+          type: "terminal",
+          terminal: {
+            id: "term-etc-ftpusers",
+            title: "Inspect Denied FTP User List",
+            environment: "LINUX",
+            copyCommand: "cat /etc/ftpusers",
+            caption: "Accounts listed here are rejected even with valid Linux passwords.",
+            lines: [
+              {
+                kind: "command",
+                prompt: "$",
+                text: "cat /etc/ftpusers",
+                copyable: true
+              },
+              { kind: "output", text: "guest" },
+              { kind: "output", text: "john" },
+              { kind: "output", text: "kevin" }
+            ]
+          }
+        },
+        {
+          type: "callout",
+          tone: "ok",
+          title: "Protecting sensitive system accounts",
+          body: [
+            "Users listed in /etc/ftpusers cannot log in to the FTP service even if they have valid user accounts and passwords on the Linux host.",
+            "Administrators use this denylist to keep privileged or sensitive system accounts (such as root or service accounts) off cleartext or exposed FTP logins."
+          ],
+          inspectorIds: ["etc-ftpusers", "local_enable"]
+        }
+      ]
+    },
+    {
+      id: "anonymous",
+      indexLabel: "04",
+      shortTitle: "Anonymous",
+      title: "Part 4: Dangerous Settings & Anonymous Access",
+      intro:
+        "Anonymous access lets clients connect without personal credentials. While sometimes enabled inside internal networks to share files easily, misconfigurations introduce severe risks.",
+      diagramIds: ["ftp-anon-enum", "ftp-quick-facts"],
+      blocks: [
+        {
+          type: "settings-table",
+          id: "tbl-dangerous-settings",
+          title: "Anonymous & Write Directives",
+          rows: [
+            {
+              setting: "anonymous_enable=YES",
+              summary: "Allows users to log in using the anonymous account.",
+              riskLevel: "danger",
+              inspectorId: "anonymous_enable_yes"
+            },
+            {
+              setting: "no_anon_password=YES",
+              summary: "Allows anonymous users to log in without entering a password prompt.",
+              riskLevel: "danger",
+              inspectorId: "no_anon_password"
+            },
+            {
+              setting: "anon_root=/home/username/ftp",
+              summary: "Defines the root directory exposed to anonymous FTP sessions.",
+              riskLevel: "info",
+              inspectorId: "anon_root"
+            },
+            {
+              setting: "write_enable=YES",
+              summary: "Enables FTP commands that modify the server filesystem.",
+              riskLevel: "danger",
+              inspectorId: "write_enable"
+            },
+            {
+              setting: "anon_upload_enable=YES",
+              summary: "Permits anonymous file uploads when filesystem permissions allow.",
+              riskLevel: "danger",
+              inspectorId: "anon_upload_enable"
+            },
+            {
+              setting: "anon_mkdir_write_enable=YES",
+              summary: "Permits anonymous directory creation when filesystem permissions allow.",
+              riskLevel: "danger",
+              inspectorId: "anon_mkdir_write_enable"
+            }
+          ]
+        },
+        {
+          type: "risk-list",
+          title: "Security Risks of Permissive Anonymous FTP",
+          items: [
+            "Unauthorized access to sensitive files.",
+            "Information disclosure through exposed directories and documents.",
+            "Uploading unwanted or malicious files onto the target host.",
+            "Creating unauthorized directories on the server.",
+            "Consuming server storage capacity."
+          ],
+          footnote:
+            "Anonymous write operations require both write_enable=YES in vsFTPd and matching Linux filesystem write permissions on the target directory."
+        }
+      ]
+    },
+    {
+      id: "enumeration",
+      indexLabel: "05",
+      shortTitle: "Enumeration",
+      title: "Part 5: Anonymous Login & Server Enumeration",
+      intro:
+        "During footprinting, connecting with the standard ftp client reveals the 220 banner, checks whether anonymous login returns 230, and enumerates directory structures.",
+      diagramIds: ["ftp-anon-enum", "ftp-passive-mode"],
+      blocks: [
+        {
+          type: "terminal",
+          terminal: {
+            id: "term-ftp-anon-connect",
+            title: "Connecting as Anonymous User",
+            environment: "FTP CLIENT",
+            copyCommand: "ftp 10.129.14.136",
+            caption: "Server greets with code 220 banner and confirms anonymous login with 230.",
+            lines: [
+              {
+                kind: "command",
+                prompt: "$",
+                text: "ftp 10.129.14.136",
+                copyable: true
+              },
+              { kind: "output", text: "Connected to 10.129.14.136." },
+              {
+                kind: "response",
+                text: '220 "Welcome to the HTB Academy vsFTP service."',
+                statusTone: "ok"
+              },
+              {
+                kind: "input",
+                prompt: "Name:",
+                text: "anonymous"
+              },
+              {
+                kind: "response",
+                text: "230 Login successful.",
+                statusTone: "ok"
+              },
+              { kind: "output", text: "Remote system type is UNIX." },
+              { kind: "output", text: "Using binary mode to transfer files." }
+            ]
+          }
+        },
+        {
+          type: "callout",
+          tone: "info",
+          title: "Banner Intelligence (Code 220)",
+          body: [
+            "When connecting to an FTP server, the server typically returns response code 220 with its welcome banner.",
+            "The banner may expose software name, version strings, or custom organization details useful for fingerprinting."
+          ],
+          inspectorIds: ["code-220", "code-230"]
+        },
+        {
+          type: "terminal",
+          terminal: {
+            id: "term-ftp-ls",
+            title: "Listing Exposed Files and Directories",
+            environment: "FTP CLIENT",
+            copyCommand: "ls",
+            caption: "Directory names alone can leak internal company structure even if files cannot be fetched.",
+            lines: [
+              {
+                kind: "command",
+                prompt: "ftp>",
+                text: "ls",
+                copyable: true
+              },
+              {
+                kind: "response",
+                text: "200 PORT command successful. Consider using PASV.",
+                statusTone: "ok"
+              },
+              {
+                kind: "response",
+                text: "150 Here comes the directory listing.",
+                statusTone: "info"
+              },
+              { kind: "output", text: "Calender.pptx" },
+              { kind: "output", text: "Clients/" },
+              { kind: "output", text: "Documents/" },
+              { kind: "output", text: "Employees/" },
+              { kind: "output", text: "Important Notes.txt" },
+              {
+                kind: "response",
+                text: "226 Directory send OK.",
+                statusTone: "ok"
+              }
+            ]
+          }
+        },
+        {
+          type: "response-codes",
+          id: "tbl-response-codes",
+          title: "Common FTP Response Codes (Click any code to inspect)",
+          codes: [
+            {
+              code: "220",
+              meaning: "Service ready for a new user.",
+              tone: "ok",
+              inspectorId: "code-220"
+            },
+            {
+              code: "230",
+              meaning: "Login successful.",
+              tone: "ok",
+              inspectorId: "code-230"
+            },
+            {
+              code: "200",
+              meaning: "Command successful.",
+              tone: "ok",
+              inspectorId: "code-200"
+            },
+            {
+              code: "150",
+              meaning: "Preparing to open the Data Connection.",
+              tone: "info",
+              inspectorId: "code-150"
+            },
+            {
+              code: "226",
+              meaning: "Data transfer completed successfully.",
+              tone: "ok",
+              inspectorId: "code-226"
+            },
+            {
+              code: "530",
+              meaning: "User not logged in.",
+              tone: "alert",
+              inspectorId: "code-530"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "diagnostics",
+      indexLabel: "06",
+      shortTitle: "Diagnostics",
+      title: "Part 6: Status, Debug & Trace",
+      intro:
+        "Understanding client-side diagnostic commands versus raw server-side FTP protocol commands helps isolate transfer failures and verify connection settings.",
+      diagramIds: ["ftp-diagnostics", "ftp-two-channels"],
+      blocks: [
+        {
+          type: "terminal",
+          terminal: {
+            id: "term-ftp-status",
+            title: "6.1 Client Status Inspection (status)",
+            environment: "FTP CLIENT",
+            copyCommand: "status",
+            caption: "Displays current FTP client settings, transfer mode, and PORT usage.",
+            lines: [
+              {
+                kind: "command",
+                prompt: "ftp>",
+                text: "status",
+                copyable: true
+              },
+              { kind: "output", text: "Connected to 10.129.14.136." },
+              { kind: "output", text: "No proxy connection." },
+              { kind: "output", text: "Connecting using address family: any." },
+              { kind: "output", text: "Mode: stream; Type: binary;" },
+              { kind: "output", text: "Form: non-print; Structure: file" },
+              { kind: "output", text: "Verbose: on" },
+              { kind: "output", text: "Debugging: off" },
+              { kind: "output", text: "Use of PORT cmds: on" }
+            ]
+          }
+        },
+        {
+          type: "comparison-table",
+          id: "tbl-status-vs-stat",
+          title: "Important Distinction: status vs STAT",
+          columns: ["Command", "Scope", "Behavior"],
+          rows: [
+            {
+              cells: [
+                "status",
+                "Local FTP client",
+                "Displays the FTP client settings and current connection state."
+              ],
+              inspectorId: "cmd-status"
+            },
+            {
+              cells: [
+                "STAT",
+                "Remote FTP server",
+                "FTP protocol command requesting status information directly from the server."
+              ],
+              inspectorId: "cmd-stat"
+            }
+          ]
+        },
+        {
+          type: "terminal",
+          terminal: {
+            id: "term-quote-stat",
+            title: "Send Raw Protocol STAT via quote",
+            environment: "FTP CLIENT",
+            copyCommand: "quote STAT",
+            caption:
+              "Depending on server implementation, STAT may return server software, session state, connected user, encryption status, and transfer settings.",
+            lines: [
+              {
+                kind: "command",
+                prompt: "ftp>",
+                text: "quote STAT",
+                copyable: true
+              }
+            ]
+          }
+        },
+        {
+          type: "terminal",
+          terminal: {
+            id: "term-debug-trace",
+            title: "6.2 Debug & 6.3 Trace Toggles",
+            environment: "FTP CLIENT",
+            copyCommand: "debug",
+            caption: "Enables client-side command observation and packet tracing where supported.",
+            lines: [
+              {
+                kind: "command",
+                prompt: "ftp>",
+                text: "debug",
+                copyable: true
+              },
+              {
+                kind: "comment",
+                text: "# Observes FTP protocol commands sent by the client."
+              },
+              {
+                kind: "command",
+                prompt: "ftp>",
+                text: "trace",
+                copyable: true
+              },
+              {
+                kind: "comment",
+                text: "# Enables or disables packet tracing in supported FTP clients."
+              }
+            ]
+          }
+        },
+        {
+          type: "comparison-table",
+          id: "tbl-diagnostics-summary",
+          title: "Diagnostics Command Summary (Click any row to inspect)",
+          columns: ["Command", "Purpose"],
+          rows: [
+            {
+              cells: ["status", "View client and connection settings."],
+              inspectorId: "cmd-status"
+            },
+            {
+              cells: ["STAT", "Request server status information (via quote STAT)."],
+              inspectorId: "cmd-stat"
+            },
+            {
+              cells: ["debug", "Observe FTP commands and debugging information."],
+              inspectorId: "cmd-debug"
+            },
+            {
+              cells: ["trace", "Trace communication when supported by the client."],
+              inspectorId: "cmd-trace"
+            }
+          ]
+        },
+        {
+          type: "callout",
+          tone: "warn",
+          title: "Technical Note: Client-Side Visibility",
+          body: [
+            "debug and trace mainly increase client-side visibility. They do not necessarily make the server disclose additional information."
+          ],
+          inspectorIds: ["cmd-debug", "cmd-trace", "cmd-stat"]
+        }
+      ]
+    }
+  ],
+  inspectors: {
+    "ftp-protocol": {
+      id: "ftp-protocol",
+      label: "FTP Dual-Channel Model",
+      category: "Protocol",
+      shortDefinition:
+        "Application-layer protocol using two separate TCP connections: a Control Channel on port 21 and a Data Channel for file transfers and directory listings.",
+      details: [
+        "FTP is one of the oldest Internet protocols and sits at the application layer alongside HTTP and POP.",
+        "Control Channel (TCP port 21) carries commands such as USER, PASS, LIST, STOR, RETR, PORT, PASV and numeric response codes.",
+        "Data Channel opens as a separate TCP connection for actual payloads and directory listings; both channels are bidirectional after establishment."
+      ],
+      diagramId: "ftp-two-channels",
+      relatedIds: ["active-ftp", "passive-ftp", "vsftpd"]
+    },
+    "active-ftp": {
+      id: "active-ftp",
+      label: "Active FTP (PORT Mode)",
+      category: "Concept",
+      shortDefinition:
+        "Mode where the client opens port 21, sends PORT with a client listening port (e.g. 51001), and the server connects back from port 20.",
+      details: [
+        "1. Client initiates control connection from an ephemeral port (e.g. 51000) to server TCP port 21.",
+        "2. Client sends PORT telling the server which client IP and port (e.g. 51001) to connect back to.",
+        "3. Server initiates the Data Connection from server port 20 to client port 51001."
+      ],
+      securityNote:
+        "Client-side firewalls and NAT gateways frequently block the server's incoming data connection in Active mode.",
+      diagramId: "ftp-active-mode",
+      relatedIds: ["passive-ftp", "connect_from_port_20"]
+    },
+    "passive-ftp": {
+      id: "passive-ftp",
+      label: "Passive FTP (PASV Mode)",
+      category: "Concept",
+      shortDefinition:
+        "Mode where the server returns a listening data port in response to PASV so the client initiates both TCP connections.",
+      details: [
+        "1. Client connects to server TCP port 21.",
+        "2. Client sends PASV over the control channel.",
+        "3. Server replies with an open listening port (for example 52000).",
+        "4. Client initiates the Data Connection from an ephemeral port (e.g. 51002) to server port 52000."
+      ],
+      securityNote:
+        "Passive mode usually works more reliably across client firewalls and NAT because all connections are outbound from the client.",
+      diagramId: "ftp-passive-mode",
+      relatedIds: ["active-ftp", "code-200"]
+    },
+    vsftpd: {
+      id: "vsftpd",
+      label: "vsFTPd",
+      category: "Concept",
+      shortDefinition:
+        "Very Secure FTP Daemon: one of the most widely used FTP server implementations on Linux systems.",
+      details: [
+        "Implements the FTP protocol on the host OS while adding privilege separation, chroot sandboxing, and optional TLS support.",
+        "Installed on Debian/Ubuntu with sudo apt install vsftpd."
+      ],
+      terminal: {
+        id: "insp-term-vsftpd",
+        title: "Install & Verify vsFTPd",
+        environment: "LINUX",
+        copyCommand: "sudo apt install vsftpd",
+        lines: [
+          { kind: "command", prompt: "$", text: "sudo apt install vsftpd", copyable: true }
+        ]
+      },
+      diagramId: "ftp-quick-facts",
+      relatedIds: ["daemon-concept", "vsftpd-conf"]
+    },
+    "daemon-concept": {
+      id: "daemon-concept",
+      label: "Daemon",
+      category: "Concept",
+      shortDefinition:
+        "A program that runs continuously in the background to provide a specific system or network service.",
+      details: [
+        "Network daemons listen on sockets (such as TCP port 21 for FTP) or are spawned on demand by a superserver like inetd."
+      ],
+      relatedIds: ["vsftpd", "listen"]
+    },
+    "vsftpd-conf": {
+      id: "vsftpd-conf",
+      label: "/etc/vsftpd.conf",
+      category: "Directive",
+      shortDefinition:
+        "Primary configuration file controlling vsFTPd behavior, network bindings, permissions, authentication, banners, logging, and TLS.",
+      details: [
+        "Located by default at /etc/vsftpd.conf.",
+        "Because the default file omits many optional directives, consult man vsftpd.conf for every available setting."
+      ],
+      terminal: {
+        id: "insp-term-conf",
+        title: "Strip Comments from vsftpd.conf",
+        environment: "LINUX",
+        copyCommand: 'cat /etc/vsftpd.conf | grep -v "#"',
+        lines: [
+          {
+            kind: "command",
+            prompt: "$",
+            text: 'cat /etc/vsftpd.conf | grep -v "#"',
+            copyable: true
+          },
+          { kind: "command", prompt: "$", text: "man vsftpd.conf", copyable: true }
+        ]
+      },
+      relatedIds: ["vsftpd", "listen", "anonymous_enable_no"]
+    },
+    listen: {
+      id: "listen",
+      label: "listen=NO",
+      category: "Directive",
+      shortDefinition:
+        "Controls whether vsFTPd runs standalone listening on IPv4 or relies on another service such as inetd to launch it on demand.",
+      details: [
+        "If YES, vsFTPd runs independently and waits for IPv4 connections.",
+        "If both listen and listen_ipv6 are NO, a superserver such as inetd can start vsFTPd when a connection arrives, saving memory when FTP is rarely used."
+      ],
+      securityNote:
+        "Penetration Testing Note: Running vsFTPd on demand does NOT hide FTP from port scanning. TCP port 21 still appears open because inetd is listening on the socket. This option is for resource management, not stealth.",
+      relatedIds: ["listen_ipv6", "daemon-concept"]
+    },
+    listen_ipv6: {
+      id: "listen_ipv6",
+      label: "listen_ipv6=YES",
+      category: "Directive",
+      shortDefinition:
+        "Allows vsFTPd to listen independently using an IPv6 socket.",
+      details: [
+        "On most modern Linux distributions, an IPv6 listener can handle IPv6 and mapped IPv4 connections unless restricted separately.",
+        "Cannot be enabled simultaneously with listen=YES in standard single-process setups."
+      ],
+      relatedIds: ["listen", "connect_from_port_20"]
+    },
+    connect_from_port_20: {
+      id: "connect_from_port_20",
+      label: "connect_from_port_20=YES",
+      category: "Directive",
+      shortDefinition:
+        "Uses server TCP port 20 as the source port for outgoing Data Connections in Active FTP.",
+      details: [
+        "Matches traditional RFC Active FTP expectations where control traffic uses port 21 and server-initiated data traffic originates from port 20."
+      ],
+      diagramId: "ftp-active-mode",
+      relatedIds: ["active-ftp", "listen"]
+    },
+    anonymous_enable_no: {
+      id: "anonymous_enable_no",
+      label: "anonymous_enable=NO",
+      category: "Directive",
+      shortDefinition:
+        "Disables anonymous FTP login so clients must authenticate using an authorized account.",
+      details: [
+        "Hardening baseline for servers that should not expose public files without credentials.",
+        "Contrast with anonymous_enable=YES in Part 4 when anonymous sharing is intentionally or mistakenly exposed."
+      ],
+      relatedIds: ["local_enable", "anonymous_enable_yes"]
+    },
+    local_enable: {
+      id: "local_enable",
+      label: "local_enable=YES",
+      category: "Directive",
+      shortDefinition:
+        "Allows existing Linux system users to authenticate to the FTP service.",
+      details: [
+        "Checked against PAM rules and filtered by denylists such as /etc/ftpusers."
+      ],
+      securityNote:
+        "Pairing local_enable=YES with unencrypted FTP exposes system passwords to network sniffing; always verify /etc/ftpusers and TLS enforcement.",
+      relatedIds: ["pam_service_name", "etc-ftpusers"]
+    },
+    pam_service_name: {
+      id: "pam_service_name",
+      label: "pam_service_name=vsftpd",
+      category: "Directive",
+      shortDefinition:
+        "Specifies the PAM (Pluggable Authentication Modules) profile used by vsFTPd, stored at /etc/pam.d/vsftpd.",
+      details: [
+        "PAM is the Linux authentication framework also used by SSH and sudo.",
+        "The /etc/pam.d/vsftpd file controls rules such as checking /etc/ftpusers and validating local passwords."
+      ],
+      relatedIds: ["local_enable", "etc-ftpusers"]
+    },
+    secure_chroot_dir: {
+      id: "secure_chroot_dir",
+      label: "secure_chroot_dir=/var/run/vsftpd/empty",
+      category: "Directive",
+      shortDefinition:
+        "Empty, restricted directory used as a chroot sandbox for unprivileged vsFTPd processes before login.",
+      details: [
+        "Pre-login command handlers do not need access to /etc, /home, or /var.",
+        "vsFTPd isolates them inside this empty directory as their filesystem root.",
+        "This directory is NOT used for sharing, uploading, or downloading files."
+      ],
+      securityNote:
+        "If an attacker exploits a pre-authentication vulnerability inside the isolated process, the sandbox limits filesystem visibility under the Principle of Least Privilege.",
+      diagramId: "ftp-chroot-sandbox",
+      relatedIds: ["least-privilege", "pam_service_name"]
+    },
+    "least-privilege": {
+      id: "least-privilege",
+      label: "Principle of Least Privilege",
+      category: "Concept",
+      shortDefinition:
+        "Security design rule that gives each process or user only the minimum permissions needed to complete its task.",
+      details: [
+        "In vsFTPd, pre-authentication worker processes are chrooted into /var/run/vsftpd/empty with no access to sensitive OS paths like /etc, /home, or /var."
+      ],
+      diagramId: "ftp-chroot-sandbox",
+      relatedIds: ["secure_chroot_dir", "etc-ftpusers"]
+    },
+    dirmessage_enable: {
+      id: "dirmessage_enable",
+      label: "dirmessage_enable=YES",
+      category: "Directive",
+      shortDefinition:
+        "Displays a directory-specific message file whenever a user enters a configured folder.",
+      details: [
+        "Works together with message_file (commonly .message inside the directory)."
+      ],
+      relatedIds: ["message_file", "ftpd_banner"]
+    },
+    message_file: {
+      id: "message_file",
+      label: "message_file=.message",
+      category: "Directive",
+      shortDefinition:
+        "Specifies the filename inside a directory containing the welcome text shown when dirmessage_enable=YES.",
+      details: [
+        "Default filename is .message."
+      ],
+      relatedIds: ["dirmessage_enable"]
+    },
+    ftpd_banner: {
+      id: "ftpd_banner",
+      label: "ftpd_banner=Welcome to FTP Server",
+      category: "Directive",
+      shortDefinition:
+        "Sets an inline greeting string sent with the 220 response when a client connects.",
+      details: [
+        "Both ftpd_banner and banner_file control the welcome banner; banner_file takes precedence when both are set."
+      ],
+      securityNote:
+        "Customizing the banner avoids leaking default server software/version strings, though banners can also disclose organization names during footprinting.",
+      terminal: {
+        id: "insp-term-banner",
+        title: "220 Banner Output",
+        environment: "BANNER",
+        lines: [{ kind: "response", text: "220 Welcome to FTP Server", statusTone: "ok" }]
+      },
+      relatedIds: ["banner_file", "code-220"]
+    },
+    banner_file: {
+      id: "banner_file",
+      label: "banner_file=/etc/ftp_banner.txt",
+      category: "Directive",
+      shortDefinition:
+        "Loads the welcome message from an external file instead of an inline directive.",
+      details: [
+        "Overrides ftpd_banner if both are defined in /etc/vsftpd.conf."
+      ],
+      relatedIds: ["ftpd_banner", "code-220"]
+    },
+    use_localtime: {
+      id: "use_localtime",
+      label: "use_localtime=YES",
+      category: "Directive",
+      shortDefinition:
+        "Displays file modification timestamps in directory listings using the server's local timezone instead of GMT.",
+      details: [
+        "Helpful when correlating upload/modification times against local system logs."
+      ],
+      relatedIds: ["xferlog_enable"]
+    },
+    xferlog_enable: {
+      id: "xferlog_enable",
+      label: "xferlog_enable=YES",
+      category: "Directive",
+      shortDefinition:
+        "Enables audit logging of file uploads and downloads.",
+      details: [
+        "Records transfer timestamps, filenames, and transfer directions for security auditing and troubleshooting."
+      ],
+      relatedIds: ["use_localtime"]
+    },
+    ssl_enable: {
+      id: "ssl_enable",
+      label: "ssl_enable=NO",
+      category: "Directive",
+      shortDefinition:
+        "Disables SSL/TLS encryption when NO; set to YES to enable FTPS encrypted connections.",
+      details: [
+        "Requires valid certificate and key paths via rsa_cert_file and rsa_private_key_file."
+      ],
+      securityNote:
+        "Enabling ssl_enable=YES provides TLS support, but does not automatically force every client to use encryption without additional enforcement settings.",
+      diagramId: "ftp-protocol-security",
+      relatedIds: ["rsa_cert_file", "rsa_private_key_file", "ftp-ftps-sftp"]
+    },
+    rsa_cert_file: {
+      id: "rsa_cert_file",
+      label: "rsa_cert_file",
+      category: "Directive",
+      shortDefinition:
+        "Path to the server TLS certificate (/etc/ssl/certs/ssl-cert-snakeoil.pem by default on Debian/Ubuntu).",
+      details: [
+        "Used during FTPS TLS handshake when ssl_enable=YES."
+      ],
+      diagramId: "ftp-protocol-security",
+      relatedIds: ["ssl_enable", "rsa_private_key_file"]
+    },
+    rsa_private_key_file: {
+      id: "rsa_private_key_file",
+      label: "rsa_private_key_file",
+      category: "Directive",
+      shortDefinition:
+        "Path to the RSA private key (/etc/ssl/private/ssl-cert-snakeoil.key) matching rsa_cert_file.",
+      details: [
+        "Must remain readable only by root to prevent private key compromise."
+      ],
+      diagramId: "ftp-protocol-security",
+      relatedIds: ["ssl_enable", "rsa_cert_file"]
+    },
+    "ftp-ftps-sftp": {
+      id: "ftp-ftps-sftp",
+      label: "FTP vs FTPS vs SFTP",
+      category: "Protocol",
+      shortDefinition:
+        "FTP transmits in plain text, FTPS wraps FTP in SSL/TLS, and SFTP runs file transfer inside an encrypted SSH channel.",
+      details: [
+        "FTP: Plain text control and data channels (vulnerable to sniffing).",
+        "FTPS: Adds SSL/TLS encryption over FTP.",
+        "SFTP: SSH File Transfer Protocol running over SSH encryption (separate from vsFTPd)."
+      ],
+      diagramId: "ftp-protocol-security",
+      relatedIds: ["ssl_enable", "ftp-protocol"]
+    },
+    "etc-ftpusers": {
+      id: "etc-ftpusers",
+      label: "/etc/ftpusers",
+      category: "Concept",
+      shortDefinition:
+        "Denylist file containing Linux usernames prohibited from logging into FTP even with valid system passwords.",
+      details: [
+        "Enforced by the PAM configuration (/etc/pam.d/vsftpd).",
+        "Example denied users: guest, john, kevin.",
+        "Protects sensitive system accounts from unnecessary FTP exposure."
+      ],
+      terminal: {
+        id: "insp-term-ftpusers",
+        title: "Check /etc/ftpusers",
+        environment: "LINUX",
+        copyCommand: "cat /etc/ftpusers",
+        lines: [
+          { kind: "command", prompt: "$", text: "cat /etc/ftpusers", copyable: true },
+          { kind: "output", text: "guest\njohn\nkevin" }
+        ]
+      },
+      relatedIds: ["pam_service_name", "local_enable"]
+    },
+    "anonymous-access-concept": {
+      id: "anonymous-access-concept",
+      label: "Anonymous FTP Access",
+      category: "Risk",
+      shortDefinition:
+        "Allows clients to connect using the anonymous username without personal credentials.",
+      details: [
+        "Sometimes deployed in internal networks for frictionless file sharing.",
+        "Misconfigured permissions expose confidential files or allow unauthorized uploads."
+      ],
+      relatedIds: ["anonymous_enable_yes", "no_anon_password", "anon_upload_enable"]
+    },
+    anonymous_enable_yes: {
+      id: "anonymous_enable_yes",
+      label: "anonymous_enable=YES",
+      category: "Risk",
+      shortDefinition:
+        "Permits unauthenticated users to log in via the anonymous account.",
+      details: [
+        "Combined with permissive directory rights, this enables unauthenticated enumeration and potentially file retrieval or upload."
+      ],
+      securityNote:
+        "Primary footprinting target: always test anonymous login first when port 21 is open.",
+      relatedIds: ["no_anon_password", "anon_root", "code-230"]
+    },
+    no_anon_password: {
+      id: "no_anon_password",
+      label: "no_anon_password=YES",
+      category: "Risk",
+      shortDefinition:
+        "Allows anonymous clients to authenticate immediately without entering any password.",
+      details: [
+        "Skips the password check step after Name: anonymous is submitted."
+      ],
+      relatedIds: ["anonymous_enable_yes", "code-230"]
+    },
+    anon_root: {
+      id: "anon_root",
+      label: "anon_root=/home/username/ftp",
+      category: "Directive",
+      shortDefinition:
+        "Sets the filesystem directory presented as root (/) to anonymous FTP sessions.",
+      details: [
+        "All anonymous listings and transfers operate relative to this path."
+      ],
+      securityNote:
+        "Pointing anon_root at an active user home or shared folder risks exposing sensitive documents.",
+      relatedIds: ["anonymous_enable_yes", "anon_upload_enable"]
+    },
+    write_enable: {
+      id: "write_enable",
+      label: "write_enable=YES",
+      category: "Risk",
+      shortDefinition:
+        "Global switch allowing FTP commands that modify the filesystem (upload, delete, rename, mkdir).",
+      details: [
+        "Required for anon_upload_enable and anon_mkdir_write_enable to function.",
+        "Actual write ability also depends on underlying Linux filesystem permissions."
+      ],
+      relatedIds: ["anon_upload_enable", "anon_mkdir_write_enable"]
+    },
+    anon_upload_enable: {
+      id: "anon_upload_enable",
+      label: "anon_upload_enable=YES",
+      category: "Risk",
+      shortDefinition:
+        "Allows anonymous users to upload files when write_enable=YES and OS permissions permit.",
+      details: [
+        "Attackers can plant malicious payloads, web shells (if shared with a web root), or exhaust disk storage."
+      ],
+      relatedIds: ["write_enable", "anon_mkdir_write_enable"]
+    },
+    anon_mkdir_write_enable: {
+      id: "anon_mkdir_write_enable",
+      label: "anon_mkdir_write_enable=YES",
+      category: "Risk",
+      shortDefinition:
+        "Allows anonymous users to create new directories when write_enable=YES and Linux permissions allow.",
+      details: [
+        "Enables unauthorized directory creation and storage abuse."
+      ],
+      relatedIds: ["write_enable", "anon_upload_enable"]
+    },
+    "code-220": {
+      id: "code-220",
+      label: "220 Service Ready",
+      category: "Response Code",
+      shortDefinition: "220: Service ready for a new user.",
+      details: [
+        "Returned immediately upon TCP connection to port 21.",
+        "Carries the server welcome banner (for example: 220 \"Welcome to the HTB Academy vsFTP service.\")."
+      ],
+      securityNote:
+        "Banner text frequently leaks FTP server software, version numbers, or target organization hints.",
+      diagramId: "ftp-anon-enum",
+      relatedIds: ["ftpd_banner", "banner_file", "code-230"]
+    },
+    "code-230": {
+      id: "code-230",
+      label: "230 Login Successful",
+      category: "Response Code",
+      shortDefinition: "230: User logged in, proceed.",
+      details: [
+        "Confirms authentication succeeded for either a named account or anonymous login."
+      ],
+      diagramId: "ftp-anon-enum",
+      relatedIds: ["code-220", "code-530"]
+    },
+    "code-200": {
+      id: "code-200",
+      label: "200 Command Successful",
+      category: "Response Code",
+      shortDefinition: "200: The requested control command succeeded.",
+      details: [
+        "Commonly seen in response to PORT or mode configuration commands (e.g. 200 PORT command successful. Consider using PASV.)."
+      ],
+      diagramId: "ftp-anon-enum",
+      relatedIds: ["active-ftp", "passive-ftp"]
+    },
+    "code-150": {
+      id: "code-150",
+      label: "150 Opening Data Connection",
+      category: "Response Code",
+      shortDefinition: "150: File status okay; preparing to open the Data Connection.",
+      details: [
+        "Issued right before the server sends directory listing data (ls) or transfers a file over the Data Channel."
+      ],
+      diagramId: "ftp-anon-enum",
+      relatedIds: ["code-226", "ftp-protocol"]
+    },
+    "code-226": {
+      id: "code-226",
+      label: "226 Transfer Completed",
+      category: "Response Code",
+      shortDefinition: "226: Closing Data Connection; requested file action succeeded.",
+      details: [
+        "Confirms directory listing or file transfer finished cleanly over the Data Channel."
+      ],
+      diagramId: "ftp-anon-enum",
+      relatedIds: ["code-150"]
+    },
+    "code-530": {
+      id: "code-530",
+      label: "530 Not Logged In",
+      category: "Response Code",
+      shortDefinition: "530: Authentication failed or user not logged in.",
+      details: [
+        "Returned when credentials are invalid, anonymous login is disabled, or the account is blocked in /etc/ftpusers."
+      ],
+      relatedIds: ["code-230", "etc-ftpusers", "anonymous_enable_no"]
+    },
+    "cmd-status": {
+      id: "cmd-status",
+      label: "ftp> status",
+      category: "Command",
+      shortDefinition:
+        "Client-side command displaying current FTP client settings, transfer mode, verbosity, and PORT usage.",
+      details: [
+        "Reports local client state such as Mode: stream, Type: binary, Verbose: on, Debugging: off, Use of PORT cmds: on.",
+        "Does not send an FTP protocol command to the server."
+      ],
+      terminal: {
+        id: "insp-term-status",
+        title: "Client status Output",
+        environment: "FTP CLIENT",
+        copyCommand: "status",
+        lines: [
+          { kind: "command", prompt: "ftp>", text: "status", copyable: true },
+          { kind: "output", text: "Connected to 10.129.14.136." },
+          { kind: "output", text: "Mode: stream; Type: binary;" },
+          { kind: "output", text: "Verbose: on\nDebugging: off\nUse of PORT cmds: on" }
+        ]
+      },
+      relatedIds: ["cmd-stat", "cmd-debug", "cmd-trace"]
+    },
+    "cmd-stat": {
+      id: "cmd-stat",
+      label: "STAT (ftp> quote STAT)",
+      category: "Command",
+      shortDefinition:
+        "Raw FTP protocol command requesting server-side status information.",
+      details: [
+        "Sent from the standard Linux ftp client using quote STAT.",
+        "Depending on server implementation, it may return server software details, active session info, connected user, TLS encryption status, and transfer settings."
+      ],
+      terminal: {
+        id: "insp-term-stat",
+        title: "Query Server Status",
+        environment: "FTP CLIENT",
+        copyCommand: "quote STAT",
+        lines: [{ kind: "command", prompt: "ftp>", text: "quote STAT", copyable: true }]
+      },
+      diagramId: "ftp-diagnostics",
+      relatedIds: ["cmd-status", "cmd-debug"]
+    },
+    "cmd-debug": {
+      id: "cmd-debug",
+      label: "ftp> debug",
+      category: "Command",
+      shortDefinition:
+        "Toggles client-side debugging mode to display raw FTP protocol commands sent by the client.",
+      details: [
+        "Helps observe protocol exchanges (USER, PASS, PORT/PASV, LIST) during troubleshooting or learning."
+      ],
+      securityNote:
+        "debug mainly increases client-side visibility. It does not necessarily make the server disclose extra information.",
+      diagramId: "ftp-diagnostics",
+      relatedIds: ["cmd-trace", "cmd-status"]
+    },
+    "cmd-trace": {
+      id: "cmd-trace",
+      label: "ftp> trace",
+      category: "Command",
+      shortDefinition:
+        "Toggles packet tracing in FTP clients that implement the feature.",
+      details: [
+        "Assists in diagnosing connection hangs and mode mismatches."
+      ],
+      securityNote:
+        "Like debug, trace mainly increases client-side visibility and does not force additional server disclosure.",
+      diagramId: "ftp-diagnostics",
+      relatedIds: ["cmd-debug", "cmd-status"]
+    }
+  }
+};

@@ -2,7 +2,12 @@ import React from "react";
 import Link from "next/link";
 import { WritingIndex } from "@/components/WritingIndex";
 import { WritingSeries } from "@/components/WritingSeries";
-import { getAllPosts } from "@/lib/content";
+import { SecurityFolderShelf } from "@/components/notes/SecurityFolderShelf";
+import {
+  getAllSecurityFolders,
+  getSecurityNotesAsPostSummaries
+} from "@/data/notes/security";
+import { getAllPosts, toPostSummary } from "@/lib/content";
 import { createPageMetadata } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
@@ -13,8 +18,10 @@ export const metadata = createPageMetadata({
 });
 
 export default function WritingPage() {
-  const allPosts = getAllPosts({ includeDrafts: true });
-  const posts = allPosts.filter((post) => !post.draft);
+  const allPosts = getAllPosts({ includeDrafts: true }).map(toPostSummary);
+  const securityFolders = getAllSecurityFolders();
+  const securityPosts = getSecurityNotesAsPostSummaries();
+  const posts = [...securityPosts, ...allPosts.filter((post) => !post.draft)];
 
   return (
     <div className="asl-page asl-field-notes">
@@ -26,6 +33,8 @@ export default function WritingPage() {
           behind embedded systems, Linux, cybersecurity, Flutter, and AI work.
         </p>
       </section>
+
+      <SecurityFolderShelf folders={securityFolders} />
 
       <WritingSeries posts={allPosts} />
 
