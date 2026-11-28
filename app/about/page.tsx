@@ -28,20 +28,27 @@ export default function AboutPage() {
 
       <section className="page-intro shell about-intro about-story-intro">
         <div className="about-intro-copy">
-          <span className="eyebrow">Engineer / educator / lifelong learner</span>
+          <span className="eyebrow">Embedded Systems &amp; IoT R&amp;D / Prototyping</span>
           <h1>Ahmed Ibrahim Asl</h1>
           <p className="page-lede">
             I am Ahmed Asl, an Embedded Systems &amp; IoT R&amp;D Engineer. I build by following
             the question through the whole system. My first big question was about an ATM:
             how one machine could recognize an
             account, check money somewhere else, and complete a physical action safely.
-            That question became a career across electronics, firmware, networks, software,
-            security, robotics, and teaching.
+            That question led into a career across electronics, firmware, networks,
+            device security, robotics, and connected software.
           </p>
           <p className="about-name-note">
             My Arabic family name, عسل, also appears in English records as Assal and Assl; this site uses Asl as the preferred spelling.
           </p>
-          <nav className="portfolio-jump-links" aria-label="About sections"><a className="text-link" href="#experience">Experience</a><a className="text-link" href="#education">Education</a><a className="text-link" href="#volunteering">Volunteering</a><Link className="text-link" href="/work/#recognition">Awards</Link></nav>
+          <nav className="portfolio-jump-links" aria-label="About sections">
+            <a className="text-link" href={profile.cv} target="_blank" rel="noreferrer">Open CV ↗</a>
+            <a className="text-link" href="#experience">Experience</a>
+            <a className="text-link" href="#education">Education</a>
+            <Link className="text-link" href="/work/#publications">Publications</Link>
+            <Link className="text-link" href="/work/#recognition">Awards</Link>
+            <a className="text-link" href="#volunteering">Volunteering</a>
+          </nav>
         </div>
         <ProfilePortrait context="about" />
       </section>
@@ -59,9 +66,9 @@ export default function AboutPage() {
             <p>I document assumptions, test failure modes, and turn uncertain requirements into a prototype that people can inspect and improve.</p>
           </article>
           <article>
-            <span className="mono">03 / TEACH THE SYSTEM</span>
-            <h2>Leave understanding behind.</h2>
-            <p>Teaching sharpened a useful engineering habit: a result is stronger when another person can understand, operate, and extend it.</p>
+            <span className="mono">03 / DOCUMENT &amp; HAND OFF</span>
+            <h2>Leave a system others can operate.</h2>
+            <p>Earlier technical instruction sharpened a practical R&amp;D habit: hardware and firmware only scale when teammates and clients can inspect, test, and extend them.</p>
           </article>
         </div>
         <aside className="profile-credential-card">

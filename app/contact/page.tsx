@@ -46,7 +46,7 @@ export default function ContactPage() {
                 <option>Diagnose a fault</option>
                 <option>Build a system</option>
                 <option>Review and harden</option>
-                <option>Technical education</option>
+                <option>Architecture &amp; BOM review</option>
               </select>
             </label>
             <label>

@@ -25,10 +25,7 @@
 
 ## Public projects
 
-- [Web Development](https://eng-asl.com/work/web-development/): Company websites built around the people using them.
-  - [Biovety International](https://eng-asl.com/work/web-development/biovety-website/): Website redesign, catalogue structure, domain, hosting, and business email setup for a veterinary health business moving from its legacy Eurokem presence to the new BioVety identity.
-  - [Miraj Academy](https://eng-asl.com/work/web-development/miraj-academy-website/): Website design for technical training and engineering R&D, connecting visitors with services, engineering projects, courses, and learning resources.
-- [Embedded Systems & IoT](https://eng-asl.com/work/embedded-iot/): Firmware, electronics, and connected systems, from interface to device.
+- [Embedded Systems & IoT](https://eng-asl.com/work/embedded-iot/): Firmware, custom electronics, PCB design, and connected hardware systems from signal to portal.
   - [Top Wood RFID Catalog](https://eng-asl.com/work/embedded-iot/topwood-rfid-catalog/): Built the RFID system behind Top Wood's LTOP Interactive Catalog. A custom ESP8266 + RC522 board reads product cards and talks to the catalog over the local Wi-Fi network, so tapping a card opens that product straight away. The board serves its own setup portal for reading, writing and verifying cards and for Wi-Fi setup, and ships with a one-click Windows installer. I also designed a 3D-printable two-part enclosure for the board in SolidWorks: the board screws onto four standoffs at its real mounting holes, the lid carries the Top Wood name and a tap-card target over the RC522 antenna, and every KiCad 3D model was checked for clearance.
   - [Aqua Sync 2.0.0](https://eng-asl.com/work/embedded-iot/aqua-sync/): Upgraded an existing ESP32-based Aqua Sync system by programming a 7-inch CrowPanel HMI to interface with 10 one-wire temperature sensors and a DHT sensor, connecting two embedded boards, and implementing OTA updates. Designed the interface in Figma before building the final UI in SquareLine Studio.
   - [ToolGuard](https://eng-asl.com/work/embedded-iot/toolguard/): Designed and developed a prototype system to manage borrowing and returning shared tools. I handled hardware programming, mobile UI/UX design, full Flutter application development, and Firebase integration for real-time data storage and tracking. The system monitors tool availability, tracks borrowed items and overdue returns, and provides notifications through a clean mobile interface.
@@ -40,16 +37,19 @@
   - [Wireless ROV Control System](https://eng-asl.com/work/embedded-iot/wireless-rov-control/): An ESP32 control system with NRF24L01+ radios for bidirectional telemetry and commands between an operator and a remotely operated vehicle.
   - [Multi-MCU Security Lock](https://eng-asl.com/work/embedded-iot/multi-mcu-security-lock/): An access-control prototype that separates the human-machine interface from the electronic control unit to limit the effect of physical tampering.
   - [Firewire Enterprise OTA](https://eng-asl.com/work/embedded-iot/firewire-enterprise-ota/): A remote firmware and hardware management platform for edge devices, with version tracking, device assignment, and health telemetry.
-- [Robotics](https://eng-asl.com/work/robotics/): Physical builds that sense, move, and respond.
+- [Robotics](https://eng-asl.com/work/robotics/): Physical autonomous builds that sense, actuate, and respond in real environments.
   - [AVR32 Autonomous Car](https://eng-asl.com/work/robotics/amit-avr-autonomous-car/): Graduation project for the AMIT Embedded Systems Diploma: an AVR-based autonomous car that detects and avoids obstacles using an ultrasonic sensor and servo motor.
   - [MegaSumo Autonomous Robot](https://eng-asl.com/work/robotics/megasumo-autonomous-robot/): Competition firmware and sensor logic for an autonomous sumo robot, built around fast control loops and arena-tuned behavior.
   - [Rocket League ESP32 Car](https://eng-asl.com/work/robotics/rocket-league-esp32/): A wireless ESP32 vehicle controlled with synchronized PS4 controller input over Bluetooth.
   - [Human Follower Car](https://eng-asl.com/work/robotics/human-follower-car/): A mobile robot that combines ultrasonic and vision sensing to detect and follow a moving person.
-- [Apps & UI Design](https://eng-asl.com/work/apps-ui/): Control surfaces and applications that make complex systems usable.
+- [Apps & UI Design](https://eng-asl.com/work/apps-ui/): Companion mobile apps, Flutter interfaces, and control surfaces built for hardware products.
   - [Plant Care AI](https://eng-asl.com/work/apps-ui/plant-care-ai/): A plant-monitoring system that combines soil and temperature sensing, leaf-disease detection, and a Flutter app.
   - [AgriBot Mobile App UI](https://eng-asl.com/work/apps-ui/agribot-mobile-ui/): A mobile interface for monitoring AgriBot sensor data and controlling the graduation-project robot.
   - [Dad4Hire Mobile App UI](https://eng-asl.com/work/apps-ui/dad4hire-mobile-ui/): Task flows and mobile interface design for the Dad4Hire concept developed with Google DSC at EELU.
-- [Video & Media](https://eng-asl.com/work/video-media/): Editing, motion, and visual storytelling for technical communities.
+- [B2B Technical Modernization](https://eng-asl.com/work/web-development/): Enterprise web architecture, searchable product catalogs, and infrastructure migrations for industrial firms.
+  - [Biovety International](https://eng-asl.com/work/web-development/biovety-website/): Website redesign, catalogue structure, domain, hosting, and business email setup for a veterinary health business moving from its legacy Eurokem presence to the new BioVety identity.
+  - [Miraj Academy](https://eng-asl.com/work/web-development/miraj-academy-website/): Website design for technical training and engineering R&D, connecting visitors with services, engineering projects, courses, and learning resources.
+- [Video & Media](https://eng-asl.com/work/video-media/): Editing, motion graphics, and visual documentation for engineering communities.
   - [Dragons Battle Final Call](https://eng-asl.com/work/video-media/dragons-battle-promo/): A short competition-registration video edited with rapid cuts and typographic overlays.
 
 ## Research publications

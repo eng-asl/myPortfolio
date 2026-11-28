@@ -19,11 +19,11 @@ const asset = (pathname: string): string => `${basePath}${pathname}`;
 export const profile: Profile = {
   name: "Ahmed Ibrahim Asl",
   role: "Embedded Systems & IoT R&D Engineer",
-  label: "LIFELONG LEARNER / PROBLEM SOLVER",
+  label: "END-TO-END HARDWARE & IOT R&D",
   headline:
-    "I turn rough hardware and IoT ideas into working prototypes and usable products.",
+    "I turn uncertain product requirements into tested hardware, firmware, and connected software.",
   summary:
-    "I work from problem to proof, using electronics, connectivity, software, robotics, and interface design wherever the system needs them.",
+    "One accountable R&D workflow across schematic design, PCB layout, embedded firmware, and companion mobile or web software.",
   location: "Egypt, based between Al Mahala Al Kobra and Alexandria; available for remote collaboration.",
   availability: "Open to selected embedded systems, IoT, and robotics collaborations",
   portrait: asset("/images/profilePicture/profile3.png"),
@@ -656,11 +656,11 @@ export const experience: Experience[] = [
   {
     role: "Teaching Assistant",
     organization: "Delta University for Science and Technology",
-    type: "Full-time",
-    period: "Sep 2025 - Present",
+    type: "Former full-time role",
+    period: "Sep 2025 - 2026",
     location: "Gamasa, Ad Daqahliyah, Egypt / On-site",
     description:
-      "Teach undergraduate lectures and labs in Satellite Communication, Acoustics, Digital and Logic Circuits, and Measurement and Sensors.",
+      "Taught undergraduate lectures and labs in Satellite Communication, Acoustics, Digital and Logic Circuits, and Measurement and Sensors.",
     tags: ["Satellite Communication", "Acoustics", "Digital & Logic", "Sensors"]
   },
   {

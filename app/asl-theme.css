@@ -964,7 +964,7 @@ button,
 .asl-about-trace .about-intro::after,
 .asl-brief .contact-lead::after {
   position: absolute;
-  right: var(--page-gutter);
+  inset-inline-end: var(--page-gutter);
   bottom: 22px;
   color: var(--asl-gold);
   font: 700 0.64rem/1 var(--asl-mono);
@@ -974,7 +974,7 @@ button,
 }
 
 .asl-brief .contact-lead::after {
-  right: 0;
+  inset-inline-end: 0;
 }
 
 .asl-page-intro h1,
@@ -1187,7 +1187,7 @@ button,
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 48px;
+  inset-inline-start: 48px;
   width: 1px;
   content: "";
   background: var(--asl-gold-a24);
@@ -1243,14 +1243,31 @@ button,
   padding: 20px;
   background: var(--asl-sunken);
   border: 1px solid var(--asl-line);
+  box-shadow: none;
 }
 
 .asl-field-notes .search-field,
 .asl-field-notes .filter-row button {
   min-height: 44px;
   background: var(--asl-surface);
-  border-color: var(--asl-line);
+  border: 1px solid var(--asl-line);
   border-radius: var(--asl-radius-control);
+}
+
+.asl-field-notes .search-field {
+  color: var(--asl-gold);
+}
+
+.asl-field-notes .search-field:focus-within {
+  border-color: var(--asl-gold);
+  box-shadow: 0 0 0 2px var(--asl-gold-a24);
+}
+
+.asl-field-notes .filter-row button:hover,
+.asl-field-notes .filter-row button:focus-visible {
+  color: var(--asl-text);
+  background: var(--asl-raised);
+  border-color: var(--asl-gold-a24);
 }
 
 .asl-field-notes .filter-row button.active {
@@ -1263,14 +1280,97 @@ button,
   border-top: 1px solid var(--asl-line);
 }
 
-.asl-field-notes .post-card {
-  background: transparent;
+.asl-field-notes .post-card,
+.home-brain .notes-list .post-card {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+  padding: 24px;
+  background: var(--asl-surface);
   border: 0;
-  border-right: 1px solid var(--asl-line);
+  border-inline-end: 1px solid var(--asl-line);
   border-bottom: 1px solid var(--asl-line);
-  border-left: 1px solid var(--asl-line);
+  border-inline-start: 1px solid var(--asl-line);
   border-radius: 0;
   box-shadow: none;
+  transform: none;
+}
+
+.asl-field-notes .post-card:hover,
+.asl-field-notes .post-card:focus-visible,
+.home-brain .notes-list .post-card:hover,
+.home-brain .notes-list .post-card:focus-visible {
+  background: var(--asl-raised);
+  border-color: var(--asl-gold-a24);
+  box-shadow: none;
+  transform: none;
+}
+
+:is(.asl-field-notes, .home-brain, .asl-page) .indexed-badge {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  width: 48px;
+  height: 48px;
+  overflow: hidden;
+  border: 1px solid var(--asl-gold-a24);
+  box-shadow: none;
+  font-size: 0.82rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+:is(.asl-field-notes, .home-brain, .asl-page) .indexed-badge-prefix {
+  color: var(--asl-gold);
+  background: var(--asl-sunken);
+  border-bottom: 1px solid var(--asl-line);
+}
+
+:is(.asl-field-notes, .home-brain, .asl-page) .indexed-badge-number {
+  color: #14100A;
+  background: var(--asl-gold);
+}
+
+:is(.asl-field-notes, .home-brain, .asl-page) .post-meta {
+  color: var(--asl-muted);
+}
+
+:is(.asl-field-notes, .home-brain, .asl-page) .post-main {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+:is(.asl-field-notes, .home-brain, .asl-page) .post-main h3 {
+  color: var(--asl-text);
+  overflow-wrap: anywhere;
+}
+
+:is(.asl-field-notes, .home-brain, .asl-page) .post-main p {
+  color: var(--asl-text-secondary);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+  .asl-field-notes .post-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 16px;
+  }
+}
+
+:is(.asl-field-notes, .home-brain, .asl-page) .post-card .tag {
+  color: var(--asl-text-secondary);
+  background: var(--asl-sunken);
+  border: 1px solid var(--asl-line);
+  border-radius: var(--asl-radius-control);
+}
+
+:is(.asl-field-notes, .home-brain, .asl-page) .post-card .tag:hover {
+  color: var(--asl-gold);
+  background: var(--asl-raised);
+  border-color: var(--asl-gold-a24);
+  transform: none;
 }
 
 .asl-work-log-list .project-card::before {
@@ -2088,6 +2188,15 @@ code, kbd, samp { font-family: var(--font-mono); font-size: 0.92em; }
 /* Arabic blocks */
 [dir="rtl"], [lang|="ar"] { line-height: var(--lh-body-ar); letter-spacing: 0; }
 [dir="rtl"] .u-label, [lang|="ar"] .u-label { font-family: var(--font-text-ar); font-size: var(--fs-caption); }
+.asl-arabic-page h1,
+.asl-arabic-page h2,
+.asl-arabic-page h3 {
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+.asl-arabic-page .contact-aside a[href^="mailto:"] {
+  text-transform: none;
+}
 
 /* Utility Classes */
 .u-label {

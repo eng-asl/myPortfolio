@@ -8,9 +8,9 @@ import { workCategories } from "@/data/work-categories";
 import { createPageMetadata, createPublicationsJsonLd } from "@/lib/seo";
 
 export const metadata = createPageMetadata({
-  title: "Engineering, Robotics and Website Projects",
+  title: "Embedded Systems, IoT, Robotics & Product Engineering Work",
   description:
-    "Explore Ahmed Asl’s engineering projects, client websites, and competition awards, from IoT robotics and secure hardware to web design.",
+    "Explore Ahmed Asl’s hardware prototypes, custom PCBs, ESP32/STM32 firmware, robotics, companion apps, and B2B technical modernization.",
   pathname: "/work/"
 });
 
@@ -28,8 +28,9 @@ export default function WorkPage() {
         <p className="eyebrow">Work log / verified builds</p>
         <h1>Selected work</h1>
         <p className="page-lede">
-          Explore my work in ESP32 firmware, IoT telemetry, autonomous robots,
-          secure access systems, OTA management, Flutter interfaces, and client websites.
+          Explore verified work across custom PCB design, ESP8266/ESP32 firmware,
+          IoT telemetry, autonomous robotics, Flutter control apps, and B2B technical
+          modernization.
         </p>
       </section>
 

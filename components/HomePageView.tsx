@@ -2,10 +2,11 @@ import React from "react";
 import Link from "next/link";
 import { ProfilePortrait } from "@/components/ProfilePortrait";
 import { PublicImage } from "@/components/PublicImage";
+import { PostCard } from "@/components/PostCard";
 import { profile, projects, workingMethod } from "@/data/portfolio";
 import { workCategories } from "@/data/work-categories";
 import { engineeringTools } from "@/data/tools";
-import { formatDate, getAllPosts } from "@/lib/content";
+import { getAllPosts } from "@/lib/content";
 import { getSecurityNotesAsPostSummaries } from "@/data/notes/security";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import type { Locale } from "@/lib/i18n/types";
@@ -71,16 +72,15 @@ export function HomePageView({ locale }: { locale: Locale }) {
             {isAr ? (
               <>
                 <span className="home-copy-desktop">
-                  أنا {profile.name}. بربط الإلكترونيات والبرمجيات والاتصالات علشان أبني نماذج واضحة، قابلة للقياس، وسهلة
-                  التطوير.
+                  أنا {profile.name}. بحوّل متطلبات المنتجات المعقدة إلى دوائر إلكترونية وفيرموير وتطبيقات متصلة مختبرة عمليًا ضمن مسار مسؤول واحد.
                 </span>
                 <span className="home-copy-mobile">بحوّل الفيرموير والإلكترونيات المتصلة لنماذج أولية شغالة فعليًا.</span>
               </>
             ) : (
               <>
                 <span className="home-copy-desktop">
-                  I build connected systems from physical signal to useful interface. Embedded hardware,
-                  robotics, applied AI, and the tools that make the work easier to repeat.
+                  End-to-end smart hardware prototyping from PCB and firmware to connected mobile
+                  and web software, built as one accountable system.
                 </span>
                 <span className="home-copy-mobile">I turn firmware and connected electronics into working prototypes.</span>
               </>
@@ -193,19 +193,10 @@ export function HomePageView({ locale }: { locale: Locale }) {
           <p>{dictionary.home.brainSub}</p>
         </header>
         <div className="brain-grid">
-          <div className="notes-list">
+          <div className="notes-list" dir={isAr ? "ltr" : undefined} lang={isAr ? "en" : undefined}>
             {notes.map((note, index) => {
               const noteHref = note.href ? `${note.href.replace(/\/?$/, "/")}` : `/notes/${note.slug}/`;
-              return (
-                <Link href={noteHref} key={note.slug}>
-                  <span>0{index + 1}</span>
-                  <div dir={isAr ? "ltr" : undefined} lang={isAr ? "en" : undefined}>
-                    <p>{note.category} / {formatDate(note.publishedAt)}</p>
-                    <h3>{note.title}</h3>
-                    <small>{note.readingTime} {dictionary.home.minRead}</small>
-                  </div>
-                </Link>
-              );
+              return <PostCard key={note.slug} post={{ ...note, href: noteHref }} index={index} />;
             })}
           </div>
           <aside className="prompt-panel">

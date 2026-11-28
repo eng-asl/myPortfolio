@@ -10,6 +10,6 @@ test("every portfolio project belongs to exactly one category", () => {
   const slugs = groups.flatMap(group => group.projects.map(project => project.slug));
   assert.equal(slugs.length, projects.length);
   assert.equal(new Set(slugs).size, projects.length);
-  assert.equal(groups[0].title, "Web Development");
-  assert.deepEqual(groups[0].projects.map(project => project.slug), ["biovety-website", "miraj-academy-website"]);
+  assert.equal(groups[0].title, "Embedded Systems & IoT");
+  assert.ok(groups.some(group => group.id === "web-development" && group.projects.map(project => project.slug).includes("biovety-website")));
 });

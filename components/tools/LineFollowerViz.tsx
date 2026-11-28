@@ -134,7 +134,7 @@ export function LineFollowerViz({ kp, ki, kd, speed, isRunning, onMetricsUpdate,
         style={{ shapeRendering: "geometricPrecision", width: "100%", height: "240px", backgroundColor: "#050711", border: "1px solid #30395e" }}
       >
         <path d={trackPath} fill="none" stroke="var(--pixel-gold)" strokeWidth="3" strokeDasharray="10 8" opacity="0.85" />
-        <polyline ref={trailRef} className="pid-trail" fill="none" stroke="#55d5d855" strokeWidth="2" />
+        <polyline ref={trailRef} className="pid-trail" fill="none" stroke="#d9a44173" strokeWidth="2" />
 
         <g ref={carRef} transform={`translate(${X_OFFSET}, ${MID_Y})`}>
           <polygon points="14,0 -10,-8 -6,0 -10,8" fill="var(--pixel-cyan)" stroke="var(--ink)" strokeWidth="1.5" />

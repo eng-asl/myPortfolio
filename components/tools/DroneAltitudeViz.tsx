@@ -177,7 +177,7 @@ export function DroneAltitudeViz({ kp, ki, kd, target, mass, damping, isRunning,
       >
         <line x1="0" x2={VIEW_W} y1={GROUND_Y} y2={GROUND_Y} stroke="#3a4568" strokeWidth="3" />
         <line ref={targetLineRef} className="pid-target" x1="0" x2={VIEW_W} y1={GROUND_Y} y2={GROUND_Y} stroke="var(--pixel-gold)" strokeWidth="2" strokeDasharray="6 6" />
-        <polyline ref={trailRef} className="pid-trail" fill="none" stroke="#55d5d855" strokeWidth="2" />
+        <polyline ref={trailRef} className="pid-trail" fill="none" stroke="#d9a44173" strokeWidth="2" />
 
         <g ref={droneRef} transform={`translate(500, ${GROUND_Y})`}>
           <path ref={thrustRef} d="M -22 8 L -10 34 L 10 34 L 22 8 Z" fill="var(--pixel-cyan)" opacity="0.15" />

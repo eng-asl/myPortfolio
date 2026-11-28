@@ -180,7 +180,7 @@ export function PidSvgViz({ kp, ki, kd, target, mass, damping, plant = "mass-spr
     <div className="tool-canvas-frame">
       <svg ref={svgRef} viewBox="0 0 1000 240" className="pid-svg" style={{ shapeRendering: "crispEdges", width: "100%", height: "240px", backgroundColor: "#050711", border: "1px solid #30395e" }}>
         <line ref={targetLineRef} className="pid-target" y1="0" y2="100%" stroke="var(--pixel-gold)" strokeWidth="2" strokeDasharray="4 4" />
-        <polyline ref={trailRef} className="pid-trail" fill="none" stroke="#55d5d855" strokeWidth="2" />
+        <polyline ref={trailRef} className="pid-trail" fill="none" stroke="#d9a44173" strokeWidth="2" />
         <rect ref={blockRef} className="pid-block" y="20" width="40" height="20" fill="var(--pixel-cyan)" />
       </svg>
     </div>
