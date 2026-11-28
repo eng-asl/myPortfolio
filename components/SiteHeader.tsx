@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+import { profile } from "@/data/portfolio";
 
 export function SiteHeader() {
   const pathname = usePathname() || "/";
@@ -15,11 +16,14 @@ export function SiteHeader() {
   const homeHref = `${prefix}/`;
   const links = [
     { href: `${prefix}/work`, label: dictionary.nav.work },
-    { href: `${prefix}/tools`, label: dictionary.nav.tools }
+    { href: `${prefix}/tools`, label: dictionary.nav.tools },
+    { href: `${prefix}/notes`, label: dictionary.nav.notes }
   ];
   const moreLinks = [
-    { href: `${prefix}/notes`, label: dictionary.nav.notes },
-    { href: `${prefix}/about`, label: dictionary.nav.about }
+    { href: "/work/#publications", label: locale === "ar" ? "الأبحاث والمؤلفات" : "Research" },
+    { href: `${prefix}/about`, label: dictionary.nav.about },
+    { href: "/notes/library", label: locale === "ar" ? "المكتبة (PDF)" : "PDF Library" },
+    { href: "/prompts", label: locale === "ar" ? "أدلة البرومبت" : "Prompts" }
   ];
   const [open, setOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -107,6 +111,17 @@ export function SiteHeader() {
                   </Link>
                 );
               })}
+              <a
+                href={profile.cv}
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => {
+                  setOpen(false);
+                  setMoreOpen(false);
+                }}
+              >
+                {locale === "ar" ? "السيرة الذاتية (CV) ↗" : "CV (PDF) ↗"}
+              </a>
             </div>
           </details>
           <ThemeToggle />

@@ -45,7 +45,7 @@ export function HomePageView({ locale }: { locale: Locale }) {
               fetchPriority="high"
             />
             <div className="home-mobile-identity-copy">
-              <strong>{profile.name}</strong>
+              <strong>{isAr ? "أحمد إبراهيم عسل" : profile.name}</strong>
               <small>{isAr ? dictionary.home.role : profile.role}</small>
               <span className="home-mobile-capabilities">{dictionary.home.capabilities}</span>
             </div>
@@ -94,6 +94,20 @@ export function HomePageView({ locale }: { locale: Locale }) {
               {dictionary.actions.exploreTools}
             </Link>
           </div>
+          <nav className="home-quick-access" aria-label={isAr ? "روابط تقييم سريعة" : "Quick evaluation links"}>
+            <a href={profile.cv} target="_blank" rel="noreferrer">
+              {isAr ? "السيرة الذاتية (CV) ↗" : "CV (PDF) ↗"}
+            </a>
+            <Link href="/work/#publications">
+              {isAr ? "الأبحاث والمؤلفات" : "Research & Papers"}
+            </Link>
+            <Link href={`${prefix}/notes/`}>
+              {isAr ? "الملاحظات الهندسية" : "Field Notes"}
+            </Link>
+            <a href={profile.scholar} target="_blank" rel="noreferrer">
+              Google Scholar ↗
+            </a>
+          </nav>
           {!isAr && (
             <p className="home-title-ar home-title-ar-mobile" lang="ar" dir="rtl">
               فكّك المشكلة. وابني الحل.
@@ -133,7 +147,7 @@ export function HomePageView({ locale }: { locale: Locale }) {
             >
               <PublicImage src={project.image} alt="" sizesPreset="home-project" />
               <span className="project-index">0{index + 1}</span>
-              <div className="project-copy" dir={isAr ? TECH_DIR : undefined}>
+              <div className="project-copy" dir={isAr ? "ltr" : undefined} lang={isAr ? "en" : undefined}>
                 <p>{project.category} / {project.year}</p>
                 <h3>{project.title}</h3>
                 <span>{project.outcome}</span>
@@ -158,7 +172,7 @@ export function HomePageView({ locale }: { locale: Locale }) {
               <div className="tool-cover" aria-hidden="true">
                 {tool.coverImage ? <PublicImage src={tool.coverImage} alt="" original /> : <i />}
               </div>
-              <div className="tool-copy" dir={isAr ? TECH_DIR : undefined}>
+              <div className="tool-copy" dir={isAr ? "ltr" : undefined} lang={isAr ? "en" : undefined}>
                 <p>UTILITY / {tool.highlight || "LIVE"}</p>
                 <h3>{tool.title}</h3>
                 <span>{tool.description}</span>
@@ -185,7 +199,7 @@ export function HomePageView({ locale }: { locale: Locale }) {
               return (
                 <Link href={noteHref} key={note.slug}>
                   <span>0{index + 1}</span>
-                  <div dir={isAr ? TECH_DIR : undefined}>
+                  <div dir={isAr ? "ltr" : undefined} lang={isAr ? "en" : undefined}>
                     <p>{note.category} / {formatDate(note.publishedAt)}</p>
                     <h3>{note.title}</h3>
                     <small>{note.readingTime} {dictionary.home.minRead}</small>
@@ -210,8 +224,8 @@ export function HomePageView({ locale }: { locale: Locale }) {
           {workingMethod.map((item) => (
             <div key={item.step}>
               <span>{item.step}</span>
-              <h3 dir={isAr ? TECH_DIR : undefined}>{item.label}</h3>
-              <p dir={isAr ? TECH_DIR : undefined}>{item.description}</p>
+              <h3 dir={isAr ? "ltr" : undefined} lang={isAr ? "en" : undefined}>{item.label}</h3>
+              <p dir={isAr ? "ltr" : undefined} lang={isAr ? "en" : undefined}>{item.description}</p>
             </div>
           ))}
         </div>
